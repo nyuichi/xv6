@@ -144,7 +144,7 @@ getcmd(char *buf, int nbuf)
 int
 main(void)
 {
-  static char buf[100];
+  static char buf[100] = {0};
   int fd;
   
   // Assumes three file descriptors open.
@@ -260,8 +260,8 @@ backcmd(struct cmd *subcmd)
 //PAGEBREAK!
 // Parsing
 
-char whitespace[] = " \t\r\n\v";
-char symbols[] = "<|>&;()";
+char whitespace[16] = " \t\r\n\v";
+char symbols[16] = "<|>&;()";
 
 int
 gettoken(char **ps, char *es, char **q, char **eq)
