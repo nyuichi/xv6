@@ -7,7 +7,7 @@
 #include "x86.h"
 
 //static void startothers(void);
-static void mpmain(void)  __attribute__((noreturn));
+static void mpmain(void);
 extern pde_t *kpgdir;
 extern char end[]; // first address after kernel loaded from ELF file
 
@@ -43,7 +43,7 @@ main(void)
 static void
 mpenter(void)
 {
-  switchkvm(); 
+  switchkvm();
   seginit();
   lapicinit();
   mpmain();
@@ -65,9 +65,8 @@ pde_t entrypgdir[];  // For entry.S
 
 // Boot page table used in entry.S and entryother.S.
 // Page directories (and page tables), must start on a page boundary,
-// hence the "__aligned__" attribute.  
+// hence the "__aligned__" attribute.
 // Use PTE_PS in page directory entry to enable 4Mbyte pages.
-__attribute__((__aligned__(PGSIZE)))
 pde_t entrypgdir[NPDENTRIES] = {
   // Map VA's [0, 4MB) to PA's [0, 4MB)
   [0] = (0) | PTE_P | PTE_W | PTE_PS,

@@ -17,9 +17,9 @@ void            bwrite(struct buf*);
 
 // console.c
 void            consoleinit(void);
-void            cprintf(char*, ...);
+void            cprintf();
 void            consoleintr(int(*)(void));
-void            panic(char*) __attribute__((noreturn));
+void            panic(char*);
 
 // exec.c
 int             exec(char*, char**);
@@ -111,7 +111,7 @@ int             growproc(int);
 int             kill(int);
 void            pinit(void);
 void            procdump(void);
-void            scheduler(void) __attribute__((noreturn));
+void            scheduler(void);
 void            sched(void);
 void            sleep(void*, struct spinlock*);
 void            userinit(void);
