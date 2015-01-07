@@ -20,16 +20,16 @@ int
 main(void)
 {
   init_global_var();
-  
+
   kinit1(end, P2V(4*1024*1024)); // phys page allocator
-  
+
   kvmalloc();      // kernel page table
   seginit();       // set up segments
   cprintf("\ncpu%d: starting xv6\n\n", cpu->id);
   //picinit();       // interrupt controller
   consoleinit();   // I/O devices & their interrupts
   uartinit();      // serial port
-  
+
   pinit();         // process table
   tvinit();        // trap vectors
   binit();         // buffer cache
@@ -38,13 +38,13 @@ main(void)
   ideinit();       // disk
   if(!ismp)
     timerinit();   // uniprocessor timer
-  
+
   kinit2(P2V(4*1024*1024), P2V(PHYSTOP)); // must come after startothers()
-  
+
   userinit();      // first user process
   // Finish setting up this processor in mpmain.
   mpmain();
-  
+
 }
 
 
@@ -53,7 +53,7 @@ main(void)
 static void
 mpenter(void)
 {
-  switchkvm(); 
+  switchkvm();
   seginit();
   lapicinit();
   mpmain();
@@ -70,13 +70,11 @@ mpmain(void)
 }
 
 
-pde_t entrypgdir[];  // For entry.S
-
-
 // Boot page table used in entry.S and entryother.S.
 // Page directories (and page tables), must start on a page boundary,
-// hence the "__aligned__" attribute.  
+// hence the "__aligned__" attribute.
 // Use PTE_PS in page directory entry to enable 4Mbyte pages.
+
 
 pde_t entrypgdir[NPDENTRIES];
 
