@@ -7,7 +7,7 @@
 #include "memlayout.h"
 #include "traps.h"
 #include "mmu.h"
-#include "x86.h"
+#include "gaia.h"
 
 // Local APIC registers, divided by 4 for use as uint[] indices.
 #define ID      (0x0020/4)   // ID
@@ -104,12 +104,14 @@ cpunum(void)
   // Would prefer to panic but even printing is chancy here:
   // almost everything, including cprintf and panic, calls cpu,
   // often indirectly through acquire and release.
+  /*
   if(readeflags()&FL_IF){
     static int n;
     if(n++ == 0)
       cprintf("cpu called from %x with interrupts enabled\n",
         __builtin_return_address(0));
-  }
+        }
+  */
 
   if(lapic)
     return lapic[ID]>>24;
@@ -232,6 +234,13 @@ void cmostime(struct rtcdate *r)
 #undef     CONV
   }
 
-  *r = t1;
+  //*r = t1;
+  r->second = t1.second;
+  r->minute = t1.minute;
+  r->hour   = t1.hour;
+  r->day    = t1.day;
+  r->month  = t1.month;
+  r->year   = t1.year;
+
   r->year += 2000;
 }

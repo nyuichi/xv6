@@ -3,7 +3,7 @@
 #include "param.h"
 #include "memlayout.h"
 #include "mmu.h"
-#include "x86.h"
+#include "gaia.h"
 #include "proc.h"
 #include "spinlock.h"
 
@@ -435,12 +435,12 @@ void
 procdump(void)
 {
   static char *states[] = {
-  [UNUSED]    "unused",
-  [EMBRYO]    "embryo",
-  [SLEEPING]  "sleep ",
-  [RUNNABLE]  "runble",
-  [RUNNING]   "run   ",
-  [ZOMBIE]    "zombie"
+    "unused",
+    "embryo",
+    "sleep ",
+    "runble",
+    "run   ",
+    "zombie"
   };
   int i;
   struct proc *p;
