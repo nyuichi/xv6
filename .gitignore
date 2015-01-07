@@ -16,3 +16,8 @@ mkfs
 .gdbinit
 /TAGS
 /tags
+/GPATH
+/GRTAGS
+/GSYMS
+/GTAGS
+/bin/*.s

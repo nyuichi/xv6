@@ -70,9 +70,6 @@ mpmain(void)
 }
 
 
-pde_t entrypgdir[];  // For entry.S
-
-
 // Boot page table used in entry.S and entryother.S.
 // Page directories (and page tables), must start on a page boundary,
 // hence the "__aligned__" attribute.
