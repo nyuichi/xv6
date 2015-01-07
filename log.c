@@ -52,10 +52,12 @@ static void commit();
 void
 initlog(void)
 {
-  if (sizeof(struct logheader) >= BSIZE)
-    panic("initlog: too big logheader");
-
   struct superblock sb;
+  
+  if(sizeof(struct logheader) >= BSIZE){
+    panic("initlog: too big logheader");
+  }
+  
   initlock(&log.lock, "log");
   readsb(ROOTDEV, &sb);
   log.start = sb.size - sb.nlog;

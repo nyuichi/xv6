@@ -9,7 +9,7 @@
 #include "file.h"
 #include "mmu.h"
 #include "proc.h"
-#include "x86.h"
+#include "gaia.h"
 
 #define COM1    0x3f8
 
@@ -19,7 +19,7 @@ void
 uartinit(void)
 {
   char *p;
-
+  /*
   // Turn off the FIFO
   outb(COM1+2, 0);
   
@@ -41,8 +41,10 @@ uartinit(void)
   inb(COM1+2);
   inb(COM1+0);
   picenable(IRQ_COM1);
-  
+  */
   // Announce that we're here.
+  uart = 1;
+
   for(p="xv6...\n"; *p; p++)
     uartputc(*p);
 }
@@ -61,7 +63,8 @@ uartputc(int c)
     return;
   for(i = 0; i < 128 && !(inb(COM1+5) & 0x20); i++)
     microdelay(10);
-  outb(COM1+0, c);
+  //outb(COM1+0, c);
+  write(c);
 }
 
 static int

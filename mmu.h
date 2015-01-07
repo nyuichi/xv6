@@ -48,7 +48,9 @@
 
 //PAGEBREAK!
 #ifndef __ASSEMBLER__
+
 // Segment Descriptor
+/*
 struct segdesc {
   uint lim_15_0 : 16;  // Low bits of segment limit
   uint base_15_0 : 16; // Low bits of segment base address
@@ -63,9 +65,10 @@ struct segdesc {
   uint db : 1;         // 0 = 16-bit segment, 1 = 32-bit segment
   uint g : 1;          // Granularity: limit scaled by 4K when set
   uint base_31_24 : 8; // High bits of segment base address
-};
+  };*/
 
 // Normal segment
+/*
 #define SEG(type, base, lim, dpl) (struct segdesc)    \
 { ((lim) >> 12) & 0xffff, (uint)(base) & 0xffff,      \
   ((uint)(base) >> 16) & 0xff, type, 1, dpl, 1,       \
@@ -74,6 +77,7 @@ struct segdesc {
 { (lim) & 0xffff, (uint)(base) & 0xffff,              \
   ((uint)(base) >> 16) & 0xff, type, 1, dpl, 1,       \
   (uint)(lim) >> 16, 0, 0, 1, 0, (uint)(base) >> 24 }
+*/
 #endif
 
 #define DPL_USER    0x3     // User DPL
@@ -190,6 +194,7 @@ struct taskstate {
 
 // PAGEBREAK: 12
 // Gate descriptors for interrupts and traps
+/*
 struct gatedesc {
   uint off_15_0 : 16;   // low 16 bits of offset in segment
   uint cs : 16;         // code segment selector
@@ -199,8 +204,8 @@ struct gatedesc {
   uint s : 1;           // must be 0 (system)
   uint dpl : 2;         // descriptor(meaning new) privilege level
   uint p : 1;           // Present
-  uint off_31_16 : 16;  // high bits of offset in segment
-};
+  uint off_31_16 : 16;  // high bits of offset in segment  
+};*/
 
 // Set up a normal interrupt/trap gate descriptor.
 // - istrap: 1 for a trap (= exception) gate, 0 for an interrupt gate.
