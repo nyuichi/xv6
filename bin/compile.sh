@@ -6,3 +6,6 @@ do
     echo $x;
     $dir/../../ucc/bin/ucc -s -o $dir/${x%.*}.s $f
 done
+
+rm $dir/ide.s
+
