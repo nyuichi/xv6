@@ -99,42 +99,41 @@ extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
 
-static int (*syscalls[])(void) = {
-  0,
-  sys_fork,
-  sys_exit,
-  sys_wait,
-  sys_pipe,
-  sys_read,
-  sys_kill,
-  sys_exec,
-  sys_fstat,
-  sys_chdir,
-  sys_dup,
-  sys_getpid,
-  sys_sbrk,
-  sys_sleep,
-  sys_uptime,
-  sys_open,
-  sys_write,
-  sys_mknod,
-  sys_unlink,
-  sys_link,
-  sys_mkdir,
-  sys_close
-};
+int callsys (int num) {
+  switch(num){
+  case SYS_fork   : return sys_fork();
+  case SYS_exit   : return sys_exit();
+  case SYS_wait   : return sys_wait();
+  case SYS_pipe   : return sys_pipe();
+  case SYS_read   : return sys_read();
+  case SYS_kill   : return sys_kill();
+  case SYS_exec   : return sys_exec();
+  case SYS_fstat  : return sys_fstat();
+  case SYS_chdir  : return sys_chdir();
+  case SYS_dup    : return sys_dup();
+  case SYS_getpid : return sys_getpid();
+  case SYS_sbrk   : return sys_sbrk();
+  case SYS_sleep  : return sys_sleep();
+  case SYS_uptime : return sys_uptime();
+  case SYS_open   : return sys_open();
+  case SYS_write  : return sys_write();
+  case SYS_mknod  : return sys_mknod();
+  case SYS_unlink : return sys_unlink();
+  case SYS_link   : return sys_link();
+  case SYS_mkdir  : return sys_mkdir();
+  case SYS_close  : return sys_close();
+  default         : return -1;
+  }
+}
 
 void
 syscall(void)
 {
   int num;
-
   num = proc->tf->eax;
-  if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
-    proc->tf->eax = syscalls[num]();
-  } else {
+  proc->tf->eax = callsys(num);
+  if(proc->tf->eax < 0){
     cprintf("%d %s: unknown sys call %d\n",
             proc->pid, proc->name, num);
-    proc->tf->eax = -1;
   }
 }
