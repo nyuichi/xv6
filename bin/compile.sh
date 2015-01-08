@@ -8,4 +8,4 @@ do
 done
 
 rm $dir/ide.s
-
+rm $dir/lapic.s
