@@ -10,8 +10,8 @@
 
 #ifndef __ASSEMBLER__
 
-static uint v2p(void *a) { return ((uint) (a))  - KERNBASE; }
-static void *p2v(uint a) { return (void *) ((a) + KERNBASE); }
+static inline uint v2p(void *a) { return ((uint) (a))  - KERNBASE; }
+static inline void *p2v(uint a) { return (void *) ((a) + KERNBASE); }
 
 #endif
 
