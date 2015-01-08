@@ -1,4 +1,4 @@
-typedef unsigned uint;
-typedef unsigned ushort;
-typedef unsigned uchar;
+typedef unsigned int   uint;
+typedef unsigned short ushort;
+typedef unsigned char  uchar;
 typedef uint pde_t;
