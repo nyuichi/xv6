@@ -17,7 +17,7 @@ int
 main(int argc, char *argv[])
 {
   int fd, i;
-  char path[10] = "stressfs0";
+  char path[] = "stressfs0";
   char data[512];
 
   printf(1, "stressfs starting\n");
