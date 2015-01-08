@@ -11,6 +11,7 @@
 #include "spinlock.h"
 #include "buf.h"
 
+//extern uchar *_binary_fs_img_start, *_binary_fs_img_size;
 uchar *_binary_fs_img_start, *_binary_fs_img_size;
 
 static int disksize;
