@@ -21,3 +21,4 @@ mkfs
 /GSYMS
 /GTAGS
 /bin/*.s
+/bin/*.out

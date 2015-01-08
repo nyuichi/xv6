@@ -20,13 +20,14 @@ int
 main(void)
 {
   init_global_var();
-
+  /*
   kinit1(end, P2V(4*1024*1024)); // phys page allocator
 
   kvmalloc();      // kernel page table
   seginit();       // set up segments
   cprintf("\ncpu%d: starting xv6\n\n", cpu->id);
   //picinit();       // interrupt controller
+  */
   consoleinit();   // I/O devices & their interrupts
   uartinit();      // serial port
 
