@@ -117,6 +117,8 @@ mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)
 
 // This table defines the kernel's mappings, which are present in
 // every process's page table.
+
+/*
 static struct kmap {
   void *virt;
   uint phys_start;
@@ -128,6 +130,16 @@ static struct kmap {
  { (void*)data,     V2P(data),     PHYSTOP,   PTE_W}, // kern data+memory
  { (void*)DEVSPACE, DEVSPACE,      0,         PTE_W} // more devices
 };
+*/
+// TODO by udon
+//
+static struct kmap {
+  void *virt;
+  uint phys_start;
+  uint phys_end;
+  int perm;
+} kmap[4];
+
 
 // Set up kernel part of a page table.
 pde_t*
@@ -256,20 +268,21 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
 {
   pte_t *pte;
   uint a, pa;
-
   if(newsz >= oldsz)
     return oldsz;
 
   a = PGROUNDUP(newsz);
   for(; a  < oldsz; a += PGSIZE){
     pte = walkpgdir(pgdir, (char*)a, 0);
-    if(!pte)
+    if(!pte) {
       a += (NPTENTRIES - 1) * PGSIZE;
-    else if((*pte & PTE_P) != 0){
+    } else if((*pte & PTE_P) != 0) {
+      char *v;
       pa = PTE_ADDR(*pte);
-      if(pa == 0)
+      if(pa == 0) {
         panic("kfree");
-      char *v = p2v(pa);
+      }
+      v = p2v(pa);
       kfree(v);
       *pte = 0;
     }
