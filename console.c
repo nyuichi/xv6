@@ -12,7 +12,7 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
-#include "x86.h"
+#include "gaia.h"
 
 static void consputc(int);
 
@@ -49,59 +49,6 @@ printint(int xx, int base, int sign)
 }
 //PAGEBREAK: 50
 
-// Print to the console. only understands %d, %x, %p, %s.
-void
-cprintf(char *fmt, ...)
-{
-  int i, c, locking;
-  uint *argp;
-  char *s;
-
-  locking = cons.locking;
-  if(locking)
-    acquire(&cons.lock);
-
-  if (fmt == 0)
-    panic("null fmt");
-
-  argp = (uint*)(void*)(&fmt + 1);
-  for(i = 0; (c = fmt[i] & 0xff) != 0; i++){
-    if(c != '%'){
-      consputc(c);
-      continue;
-    }
-    c = fmt[++i] & 0xff;
-    if(c == 0)
-      break;
-    switch(c){
-    case 'd':
-      printint(*argp++, 10, 1);
-      break;
-    case 'x':
-    case 'p':
-      printint(*argp++, 16, 0);
-      break;
-    case 's':
-      if((s = (char*)*argp++) == 0)
-        s = "(null)";
-      for(; *s; s++)
-        consputc(*s);
-      break;
-    case '%':
-      consputc('%');
-      break;
-    default:
-      // Print unknown % sequence to draw attention.
-      consputc('%');
-      consputc(c);
-      break;
-    }
-  }
-
-  if(locking)
-    release(&cons.lock);
-}
-
 void
 panic(char *s)
 {
@@ -124,7 +71,8 @@ panic(char *s)
 //PAGEBREAK: 50
 #define BACKSPACE 0x100
 #define CRTPORT 0x3d4
-static ushort *crt = (ushort*)P2V(0xb8000);  // CGA memory
+//static ushort *crt = (ushort*)P2V(0xb8000);  // CGA memory
+static ushort *crt = 0xb8000 + KERNBASE;
 
 static void
 cgaputc(int c)
@@ -168,8 +116,9 @@ consputc(int c)
 
   if(c == BACKSPACE){
     uartputc('\b'); uartputc(' '); uartputc('\b');
-  } else
+  } else {
     uartputc(c);
+  }
   cgaputc(c);
 }
 
@@ -290,3 +239,55 @@ consoleinit(void)
   picenable(IRQ_KBD);
 }
 
+// Print to the console. only understands %d, %x, %p, %s.
+void
+cprintf(char *fmt)
+{
+  int i, c, locking;
+  uint *argp;
+  char *s;
+
+  locking = cons.locking;
+  if(locking)
+    acquire(&cons.lock);
+
+  if (fmt == 0)
+    panic("null fmt");
+
+  argp = (uint*)(void*)(&fmt + 1);
+  for(i = 0; (c = fmt[i] & 0xff) != 0; i++){
+    if(c != '%'){
+      consputc(c);
+      continue;
+    }
+    c = fmt[++i] & 0xff;
+    if(c == 0)
+      break;
+    switch(c){
+    case 'd':
+      printint(*argp++, 10, 1);
+      break;
+    case 'x':
+    case 'p':
+      printint(*argp++, 16, 0);
+      break;
+    case 's':
+      if((s = (char*)*argp++) == 0)
+        s = "(null)";
+      for(; *s; s++)
+        consputc(*s);
+      break;
+    case '%':
+      consputc('%');
+      break;
+    default:
+      // Print unknown % sequence to draw attention.
+      consputc('%');
+      consputc(c);
+      break;
+    }
+  }
+
+  if(locking)
+    release(&cons.lock);
+}

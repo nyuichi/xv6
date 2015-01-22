@@ -10,7 +10,8 @@
 #include "spinlock.h"
 
 void freerange(void *vstart, void *vend);
-extern char end[]; // first address after kernel loaded from ELF file
+//extern char end[]; // first address after kernel loaded from ELF file
+const char *end; // first address after kernel loaded from ELF file
 
 struct run {
   struct run *next;
@@ -93,4 +94,3 @@ kalloc(void)
     release(&kmem.lock);
   return (char*)r;
 }
-

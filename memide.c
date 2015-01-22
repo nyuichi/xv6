@@ -6,12 +6,13 @@
 #include "param.h"
 #include "mmu.h"
 #include "proc.h"
-#include "x86.h"
+#include "gaia.h"
 #include "traps.h"
 #include "spinlock.h"
 #include "buf.h"
 
-extern uchar _binary_fs_img_start[], _binary_fs_img_size[];
+//extern uchar *_binary_fs_img_start, *_binary_fs_img_size;
+uchar *_binary_fs_img_start, *_binary_fs_img_size;
 
 static int disksize;
 static uchar *memdisk;
@@ -30,7 +31,7 @@ ideintr(void)
   // no-op
 }
 
-// Sync buf with disk. 
+// Sync buf with disk.
 // If B_DIRTY is set, write buf to disk, clear B_DIRTY, set B_VALID.
 // Else if B_VALID is not set, read buf from disk, set B_VALID.
 void
@@ -48,7 +49,7 @@ iderw(struct buf *b)
     panic("iderw: sector out of range");
 
   p = memdisk + b->sector*512;
-  
+
   if(b->flags & B_DIRTY){
     b->flags &= ~B_DIRTY;
     memmove(p, b->data, 512);

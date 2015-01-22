@@ -7,7 +7,7 @@
 #include "memlayout.h"
 #include "traps.h"
 #include "mmu.h"
-#include "x86.h"
+#include "gaia.h"
 
 // Local APIC registers, divided by 4 for use as uint[] indices.
 #define ID      (0x0020/4)   // ID
@@ -53,19 +53,19 @@ lapicw(int index, int value)
 void
 lapicinit(void)
 {
-  if(!lapic) 
+  if(!lapic)
     return;
 
   // Enable local APIC; set spurious interrupt vector.
   lapicw(SVR, ENABLE | (T_IRQ0 + IRQ_SPURIOUS));
 
   // The timer repeatedly counts down at bus frequency
-  // from lapic[TICR] and then issues an interrupt.  
+  // from lapic[TICR] and then issues an interrupt.
   // If xv6 cared more about precise timekeeping,
   // TICR would be calibrated using an external time source.
   lapicw(TDCR, X1);
   lapicw(TIMER, PERIODIC | (T_IRQ0 + IRQ_TIMER));
-  lapicw(TICR, 10000000); 
+  lapicw(TICR, 10000000);
 
   // Disable logical interrupt lines.
   lapicw(LINT0, MASKED);
@@ -104,12 +104,15 @@ cpunum(void)
   // Would prefer to panic but even printing is chancy here:
   // almost everything, including cprintf and panic, calls cpu,
   // often indirectly through acquire and release.
+
   if(readeflags()&FL_IF){
     static int n;
     if(n++ == 0)
-      cprintf("cpu called from %x with interrupts enabled\n",
-        __builtin_return_address(0));
+      cprintf("cpu called from %s with interrupts enabled\n",
+              "[__builtin_return_address(0)]");
+//__builtin_return_address(0));
   }
+
 
   if(lapic)
     return lapic[ID]>>24;
@@ -141,7 +144,7 @@ lapicstartap(uchar apicid, uint addr)
 {
   int i;
   ushort *wrv;
-  
+
   // "The BSP must initialize CMOS shutdown code to 0AH
   // and the warm reset vector (DWORD based at 40:67) to point at
   // the AP startup code prior to the [universal startup algorithm]."
@@ -158,7 +161,7 @@ lapicstartap(uchar apicid, uint addr)
   microdelay(200);
   lapicw(ICRLO, INIT | LEVEL);
   microdelay(100);    // should be 10ms, but too slow in Bochs!
-  
+
   // Send startup IPI (twice!) to enter code.
   // Regular hardware is supposed to only accept a STARTUP
   // when it is in the halted state due to an INIT.  So the second
@@ -232,6 +235,13 @@ void cmostime(struct rtcdate *r)
 #undef     CONV
   }
 
-  *r = t1;
+  //*r = t1;
+  r->second = t1.second;
+  r->minute = t1.minute;
+  r->hour   = t1.hour;
+  r->day    = t1.day;
+  r->month  = t1.month;
+  r->year   = t1.year;
+
   r->year += 2000;
 }
