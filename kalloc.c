@@ -31,9 +31,13 @@ struct {
 void
 kinit1(void *vstart, void *vend)
 {
+  cprintf("kinit1-1\n");
   initlock(&kmem.lock, "kmem");
+  cprintf("kinit1-2\n");
   kmem.use_lock = 0;
+  cprintf("kinit1-3\n");
   freerange(vstart, vend);
+  cprintf("kinit1-end\n");
 }
 
 void

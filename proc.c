@@ -129,6 +129,7 @@ growproc(int n)
 int
 fork(void)
 {
+  extern void* memcpy(void*, const void*, uint);
   int i, pid;
   struct proc *np;
 
@@ -145,7 +146,8 @@ fork(void)
   }
   np->sz = proc->sz;
   np->parent = proc;
-  *np->tf = *proc->tf;
+  //*np->tf = *proc->tf;
+  memcpy(np->tf, proc->tf, sizeof(*np->tf));
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;

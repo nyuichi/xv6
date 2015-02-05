@@ -9,7 +9,10 @@
 //static void startothers(void);
 static void mpmain(void);
 extern pde_t *kpgdir;
-extern char end[]; // first address after kernel loaded from ELF file
+
+extern char __UCC_HEAP_START;
+char* end = &__UCC_HEAP_START;
+//extern char end[]; // first address after kernel loaded from ELF file
 
 void init_global_var();
 
@@ -20,14 +23,13 @@ int
 main(void)
 {
   init_global_var();
-  /*
-  kinit1(end, P2V(4*1024*1024)); // phys page allocator
 
-  kvmalloc();      // kernel page table
-  seginit();       // set up segments
-  cprintf("\ncpu%d: starting xv6\n\n", cpu->id);
+  kinit1(end, P2V(4*1024*1024)); // phys page allocator
+  //kvmalloc();      // kernel page table
+  //seginit();       // set up segments
+  //cprintf("\ncpu%d: starting xv6\n\n", cpu->id);
   //picinit();       // interrupt controller
-  */
+
   consoleinit();   // I/O devices & their interrupts
   uartinit();      // serial port
 
