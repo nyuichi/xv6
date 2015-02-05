@@ -22,7 +22,7 @@ uartinit(void)
   /*
   // Turn off the FIFO
   outb(COM1+2, 0);
-  
+
   // 9600 baud, 8 data bits, 1 stop bit, parity off.
   outb(COM1+3, 0x80);    // Unlock divisor
   outb(COM1+0, 115200/9600);
@@ -58,9 +58,9 @@ void
 uartputc(int c)
 {
   int i;
-
-  if(!uart)
-    return;
+  //TODO by mh: uart isn't initialized
+  //if(!uart)
+  //  return;
   for(i = 0; i < 128 && !(inb(COM1+5) & 0x20); i++)
     microdelay(10);
   //outb(COM1+0, c);
