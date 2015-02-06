@@ -62,13 +62,16 @@ found:
 
   // Set up new context to start executing at forkret,
   // which returns to trapret.
+  /* we don't need set stack to get return address
+   * instead, we set return address in forkret by inline assembly
   sp -= 4;
   *(uint*)sp = (uint)trapret;
+  */
 
   sp -= sizeof *p->context;
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
-  p->context->eip = (uint)forkret;
+  p->context->r28 = (uint)forkret;
 
   return p;
 }
@@ -89,13 +92,18 @@ userinit(void)
   inituvm(p->pgdir, _binary_initcode_start, (int)_binary_initcode_size);
   p->sz = PGSIZE;
   memset(p->tf, 0, sizeof(*p->tf));
+
+  /*
   p->tf->cs = (SEG_UCODE << 3) | DPL_USER;
   p->tf->ds = (SEG_UDATA << 3) | DPL_USER;
   p->tf->es = p->tf->ds;
   p->tf->ss = p->tf->ds;
   p->tf->eflags = FL_IF;
   p->tf->esp = PGSIZE;
-  p->tf->eip = 0;  // beginning of initcode.S
+  p->tf->eip = 0;  // beginning of init;
+  p->cwd = namei("/");
+code.S
+  */
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
   p->cwd = namei("/");
@@ -344,6 +352,10 @@ forkret(void)
   }
 
   // Return to "caller", actually trapret (see allocproc).
+  __asm("\
+      mov r28, trapret  \n\
+      ret               \n\
+  ");
 }
 
 // Atomically release lock and sleep on chan.
