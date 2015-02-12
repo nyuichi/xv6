@@ -6,70 +6,113 @@ write(uchar data){
 }
 
 // copy
-// Routines to let C code use special x86 instructions.
+// Routines to let C code use special GAIA instructions.
 static inline uchar
 inb(ushort port)
 {
-  uchar data;
-
-  //asm volatile("in %1,%0" : "=a" (data) : "d" (port));
-  return data;
+  __asm("\
+      mov r2, [rbp+4] \n\
+      ld  r1, r2, 0   \n\
+      ret             \n\
+  ");
 }
 
 static inline void
 insl(int port, void *addr, int cnt)
 {
-  /*
-  asm volatile("cld; rep insl" :
-               "=D" (addr), "=c" (cnt) :
-               "d" (port), "0" (addr), "1" (cnt) :
-               "memory", "cc");
-  */
+  __asm("\
+      mov r1, [rbp+4]     \n\
+      mov r2, [rbp+8]     \n\
+      mov r3, [rbp+12]    \n\
+    insl_L1:              \n\
+      blt r3, 0, insl_l2  \n\
+      sub r3, r3, 1       \n\
+      ld  r4, r1, 0       \n\
+      st  r4, r2, 0       \n\
+      add r2, r2, 4       \n\
+      add r3, r3, 4       \n\
+      br  insl_L1         \n\
+    insl_L2:              \n\
+      ret                 \n\
+  ");
 }
 
 static inline void
 outb(ushort port, uchar data)
 {
-  //asm volatile("out %0,%1" : : "a" (data), "d" (port));
+  __asm("\
+      mov r1, [rbp+4]   \n\
+      mov r2, [rbp+8]   \n\
+      st  r2, r1, 0     \n\
+      ret               \n\
+  ");
 }
 
 static inline void
 outw(ushort port, ushort data)
 {
-  //asm volatile("out %0,%1" : : "a" (data), "d" (port));
+  __asm("\
+      mov r1, [rbp+4]   \n\
+      mov r2, [rbp+8]   \n\
+      st  r2, r1, 0     \n\
+      ret               \n\
+  ");
 }
 
 static inline void
 outsl(int port, const void *addr, int cnt)
 {
-  /*
-  asm volatile("cld; rep outsl" :
-               "=S" (addr), "=c" (cnt) :
-               "d" (port), "0" (addr), "1" (cnt) :
-               "cc");
-  */
+  __asm("\
+      mov r1, [rbp+4]       \n\
+      mov r2, [rbp+8]       \n\
+      mov r3, [rbp+12]      \n\
+    outsl_L1:               \n\
+      blt r3, 0, outsl_l2   \n\
+      sub r3, r3, 1         \n\
+      ld  r4, r2, 0         \n\
+      st  r4, r1, 0         \n\
+      add r2, r2, 4         \n\
+      add r3, r3, 4         \n\
+      br  outsl_L1          \n\
+    outsl_L2:               \n\
+      ret                   \n\
+  ");
 }
 
 static inline void
 stosb(void *addr, int data, int cnt)
 {
-  /*
-    asm volatile("cld; rep stosb" :
-               "=D" (addr), "=c" (cnt) :
-               "0" (addr), "1" (cnt), "a" (data) :
-               "memory", "cc");
-  */
+  __asm("\
+      mov r1, [rbp+4]       \n\
+      mov r2, [rbp+8]       \n\
+      mov r3, [rbp+12]      \n\
+    stosb_L1:               \n\
+      blt r3, 0, stosb_l2   \n\
+      sub r3, r3, 1         \n\
+      st  r2, r1, 0         \n\
+      add r3, r3, 4         \n\
+      br  stosb_L1          \n\
+    stosb_L2:               \n\
+      ret                   \n\
+  ");
 }
 
 static inline void
 stosl(void *addr, int data, int cnt)
 {
-  /*
-  asm volatile("cld; rep stosl" :
-               "=D" (addr), "=c" (cnt) :
-               "0" (addr), "1" (cnt), "a" (data) :
-               "memory", "cc");
-  */
+  __asm("\
+      mov r1, [rbp+4]       \n\
+      mov r2, [rbp+8]       \n\
+      mov r3, [rbp+12]      \n\
+    stosl_L1:               \n\
+      blt r3, 0, stosl_l2   \n\
+      sub r3, r3, 1         \n\
+      st  r2, r1, 0         \n\
+      add r3, r3, 4         \n\
+      br  stosl_L1          \n\
+    stosl_L2:               \n\
+      ret                   \n\
+  ");
 }
 
 //struct segdesc;
