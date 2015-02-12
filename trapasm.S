@@ -76,5 +76,5 @@ trapret:
   pop r2 
   pop r1
   
-  addl $0x8, %esp  # trapno and errcode
+  #add rsp, rsp, 8  # trapno and errcode
   ret
