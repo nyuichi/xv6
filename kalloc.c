@@ -32,9 +32,7 @@ kinit1(void *vstart, void *vend)
 {
   initlock(&kmem.lock, "kmem");
   kmem.use_lock = 0;
-  cprintf("kinit1-3\n");
   freerange(vstart, vend);
-  cprintf("kinit1-end\n");
 }
 
 void
