@@ -118,7 +118,7 @@ mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)
 // This table defines the kernel's mappings, which are present in
 // every process's page table.
 
-/*
+
 static struct kmap {
   void *virt;
   uint phys_start;
@@ -126,20 +126,8 @@ static struct kmap {
   int perm;
 } kmap[] = {
  { (void*)KERNBASE, 0,             EXTMEM,    PTE_W}, // I/O space
- { (void*)KERNLINK, V2P(KERNLINK), V2P(data), 0},     // kern text+rodata
- { (void*)data,     V2P(data),     PHYSTOP,   PTE_W}, // kern data+memory
- { (void*)DEVSPACE, DEVSPACE,      0,         PTE_W} // more devices
+ { (void*)KERNLINK, V2P(KERNLINK), PHYSTOP,   PTE_W}  //kern text+rodata+data +memory
 };
-*/
-// TODO by udon
-//
-static struct kmap {
-  void *virt;
-  uint phys_start;
-  uint phys_end;
-  int perm;
-} kmap[4];
-
 
 // Set up kernel part of a page table.
 pde_t*
@@ -174,7 +162,7 @@ kvmalloc(void)
 void
 switchkvm(void)
 {
-  lcr3(v2p(kpgdir));   // switch to the kernel page table
+  *(int*)PDEADDR = v2p(kpgdir);   // switch to the kernel page table
 }
 
 // Switch TSS and h/w page table to correspond to process p.
