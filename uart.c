@@ -10,6 +10,7 @@
 #include "mmu.h"
 #include "proc.h"
 #include "gaia.h"
+#include "memlayout.h"
 
 #define COM1    0x3f8
 
@@ -38,10 +39,9 @@ uartputc(int c)
   //TODO by mh: uart isn't initialized
   //if(!uart)
   //  return;
-  for(i = 0; i < 128 && !(inb(COM1+5) & 0x20); i++)
+  for(i = 0; i < 128; i++)
     microdelay(10);
-  //outb(COM1+0, c);
-  write(c);
+  *(int*)SERIAL = c;
 }
 
 static int

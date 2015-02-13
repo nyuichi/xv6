@@ -34,7 +34,7 @@ main(void)
   uartinit();      // serial port
 
   pinit();         // process table
-  tvinit();        // trap vectors
+  trapinit();        // trap vectors
   binit();         // buffer cache
   fileinit();      // file table
   iinit();         // inode cache
