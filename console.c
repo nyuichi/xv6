@@ -232,10 +232,8 @@ consoleinit(void)
   initlock(&input.lock, "input");
 
   devsw[CONSOLE].write = consolewrite;
-  devsw[CONSOLE].read = consoleread;
+  devsw[CONSOLE].read  = consoleread;
   cons.locking = 1;
-
-  picenable(IRQ_KBD);
 }
 
 // Print to the console. only understands %d, %x, %p, %s.
