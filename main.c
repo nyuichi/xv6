@@ -24,11 +24,11 @@ main(void)
 {
   init_global_var();
 
-  kinit1(end, P2V(4*1024*70)); // phys page allocator
-  //kvmalloc();      // kernel page table
-  //seginit();       // set up segments
-  //cprintf("\ncpu%d: starting xv6\n\n", cpu->id);
-  //picinit();       // interrupt controller
+  // virtual addr is not yet implemented?
+  //kinit1(end, P2V(4*1024*70)); // phys page allocator
+  kvmalloc();      // kernel page table
+  seginit();       // set up segments
+  cprintf("\ncpu%d: starting xv6\n\n", cpu->id);
 
   consoleinit();   // I/O devices & their interrupts
   uartinit();      // serial port
@@ -47,7 +47,6 @@ main(void)
   userinit();      // first user process
   // Finish setting up this processor in mpmain.
   mpmain();
-
 }
 
 
@@ -72,12 +71,10 @@ mpmain(void)
   scheduler();     // start running processes
 }
 
-
 // Boot page table used in entry.S and entryother.S.
 // Page directories (and page tables), must start on a page boundary,
 // hence the "__aligned__" attribute.
 // Use PTE_PS in page directory entry to enable 4Mbyte pages.
-
 
 pde_t entrypgdir[NPDENTRIES];
 
@@ -89,7 +86,6 @@ void init_global_var() {
   entrypgdir[KERNBASE>>PDXSHIFT] = (0) | PTE_P | PTE_W | PTE_PS;
   return;
 }
-
 
 //PAGEBREAK!
 // Blank page.
