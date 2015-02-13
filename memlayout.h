@@ -9,7 +9,8 @@
 #define KERNLINK (KERNBASE+EXTMEM)  // Address where kernel is linked
 
 //
-#define PDEADDR 0x2204
+#define PDEADDR    0x2204
+#define INTHANDLER 0x2100
 
 #ifndef __ASSEMBLER__
 
