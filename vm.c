@@ -16,31 +16,8 @@ pde_t *kpgdir;  // for use in scheduler()
 void
 seginit(void)
 {
-  struct cpu *c;
-
-  // Map "logical" addresses to virtual addresses using identity map.
-  // Cannot share a CODE descriptor for both kernel and user
-  // because it would have to have DPL_USR, but the CPU forbids
-  // an interrupt from CPL=0 to DPL=3.
-
-  c = &cpus[0];
-  /*
-  c->gdt[SEG_KCODE] = SEG(STA_X|STA_R, 0, 0xffffffff, 0);
-  c->gdt[SEG_KDATA] = SEG(STA_W, 0, 0xffffffff, 0);
-  c->gdt[SEG_UCODE] = SEG(STA_X|STA_R, 0, 0xffffffff, DPL_USER);
-  c->gdt[SEG_UDATA] = SEG(STA_W, 0, 0xffffffff, DPL_USER);
-  */
-  // Map cpu, and curproc
-  //TODO by mh
-  //c->gdt[SEG_KCPU] = SEG(STA_W, &c->cpu, 8, 0);
-
-  /*
-  lgdt(c->gdt, sizeof(c->gdt));
-  loadgs(SEG_KCPU << 3);
-  */
-
   // Initialize cpu-local storage.
-  cpu = c;
+  cpu = &cpus[0];
   proc = 0;
 }
 
