@@ -150,14 +150,6 @@ ltr(ushort sel)
   //asm volatile("ltr %0" : : "r" (sel));
 }
 
-static inline uint
-readeflags(void)
-{
-  uint eflags;
-  //asm volatile("pushfl; popl %0" : "=r" (eflags));
-  return eflags;
-}
-
 static inline void
 loadgs(ushort v)
 {
@@ -167,13 +159,20 @@ loadgs(ushort v)
 static inline void
 cli(void)
 {
-  //asm volatile("cli");
+  outb(0x2104, 0);
 }
 
 static inline void
 sti(void)
 {
-  //asm volatile("sti");
+  outb(0x2104, 1);
+}
+
+// read interrupt flag
+static inline uchar
+readiflg(void)
+{
+  return inb(0x2104);
 }
 
 static inline uint
