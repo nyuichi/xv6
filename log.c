@@ -31,7 +31,7 @@
 // Contents of the header block, used for both the on-disk header block
 // and to keep track in memory of logged sector #s before commit.
 struct logheader {
-  int n;   
+  int n;
   int sector[LOGSIZE];
 };
 
@@ -53,11 +53,11 @@ void
 initlog(void)
 {
   struct superblock sb;
-  
+
   if(sizeof(struct logheader) >= BSIZE){
     panic("initlog: too big logheader");
   }
-  
+
   initlock(&log.lock, "log");
   readsb(ROOTDEV, &sb);
   log.start = sb.size - sb.nlog;
@@ -67,7 +67,7 @@ initlog(void)
 }
 
 // Copy committed blocks from log to their home location
-static void 
+static void
 install_trans(void)
 {
   int tail;
@@ -77,7 +77,7 @@ install_trans(void)
     struct buf *dbuf = bread(log.dev, log.lh.sector[tail]); // read dst
     memmove(dbuf->data, lbuf->data, BSIZE);  // copy block to dst
     bwrite(dbuf);  // write dst to disk
-    brelse(lbuf); 
+    brelse(lbuf);
     brelse(dbuf);
   }
 }
@@ -116,7 +116,7 @@ write_head(void)
 static void
 recover_from_log(void)
 {
-  read_head();      
+  read_head();
   install_trans(); // if committed, copy from log to disk
   log.lh.n = 0;
   write_head(); // clear the log
@@ -173,7 +173,7 @@ end_op(void)
 }
 
 // Copy modified blocks from cache to log.
-static void 
+static void
 write_log(void)
 {
   int tail;
@@ -183,7 +183,7 @@ write_log(void)
     struct buf *from = bread(log.dev, log.lh.sector[tail]); // cache block
     memmove(to->data, from->data, BSIZE);
     bwrite(to);  // write the log
-    brelse(from); 
+    brelse(from);
     brelse(to);
   }
 }
@@ -195,7 +195,7 @@ commit()
     write_log();     // Write modified blocks from cache to log
     write_head();    // Write header to disk -- the real commit
     install_trans(); // Now install writes to home locations
-    log.lh.n = 0; 
+    log.lh.n = 0;
     write_head();    // Erase the transaction from the log
   }
 }
@@ -228,4 +228,3 @@ log_write(struct buf *b)
     log.lh.n++;
   b->flags |= B_DIRTY; // prevent eviction
 }
-

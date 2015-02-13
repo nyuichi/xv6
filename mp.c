@@ -20,8 +20,8 @@ void
 mpinit(void)
 {
   // Didn't like what we found; fall back to no MP.
-  ncpu = 1;
+  ncpu = 0;
   cpus[ncpu].id = ncpu;
-  // ncpu++;
+  ncpu++;
   ioapicid = 0;
 }

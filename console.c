@@ -71,8 +71,7 @@ panic(char *s)
 //PAGEBREAK: 50
 #define BACKSPACE 0x100
 #define CRTPORT 0x3d4
-//static ushort *crt = (ushort*)P2V(0xb8000);  // CGA memory
-static ushort *crt = 0xb8000 + KERNBASE;
+static ushort *crt = (ushort*)P2V(0xb8000);  // CGA memory
 
 static void
 cgaputc(int c)
