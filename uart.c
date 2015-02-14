@@ -36,9 +36,8 @@ void
 uartputc(int c)
 {
   int i;
-  //TODO by mh: uart isn't initialized
-  //if(!uart)
-  //  return;
+  if(!uart)
+    return;
   for(i = 0; i < 128; i++)
     microdelay(10);
   *(int*)SERIAL = c;
