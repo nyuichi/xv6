@@ -11,6 +11,7 @@
 //
 #define PDEADDR    0x2204
 #define INTHANDLER 0x2100
+#define SERIAL  0x2000
 
 #ifndef __ASSEMBLER__
 

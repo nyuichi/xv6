@@ -1,10 +1,5 @@
 #include "ucc.h"
 
-static inline void
-write(uchar data){
-  putchar(data);
-}
-
 // copy
 // Routines to let C code use special x86 instructions.
 static inline uchar

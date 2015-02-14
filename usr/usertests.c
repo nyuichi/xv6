@@ -858,6 +858,7 @@ void
 linkunlink()
 {
   int pid, i;
+  unsigned int x = (pid ? 1 : 97);
 
   printf(1, "linkunlink test\n");
 
@@ -868,7 +869,6 @@ linkunlink()
     exit();
   }
 
-  unsigned int x = (pid ? 1 : 97);
   for(i = 0; i < 100; i++){
     x = x * 1103515245 + 12345;
     if((x % 3) == 0){
@@ -1124,12 +1124,13 @@ bigwrite(void)
 
   unlink("bigwrite");
   for(sz = 499; sz < 12*512; sz += 471){
+    int i;
+
     fd = open("bigwrite", O_CREATE | O_RDWR);
     if(fd < 0){
       printf(1, "cannot create bigwrite\n");
       exit();
     }
-    int i;
     for(i = 0; i < 2; i++){
       int cc = write(fd, buf, sz);
       if(cc != sz){
@@ -1414,7 +1415,7 @@ forktest(void)
 void
 sbrktest(void)
 {
-  int fds[2], pid, pids[10], ppid;
+  int fds[2], pid, pids[10], ppid, i;
   char *a, *b, *c, *lastaddr, *oldbrk, *p, scratch;
   uint amt;
 
@@ -1423,7 +1424,6 @@ sbrktest(void)
 
   // can one sbrk() less than a page?
   a = sbrk(0);
-  int i;
   for(i = 0; i < 5000; i++){ 
     b = sbrk(1);
     if(b != a){
@@ -1550,13 +1550,13 @@ void
 validateint(int *p)
 {
   int res;
-  asm("mov %%esp, %%ebx\n\t"
+  /*asm("mov %%esp, %%ebx\n\t"
       "mov %3, %%esp\n\t"
       "int %2\n\t"
       "mov %%ebx, %%esp" :
       "=a" (res) :
       "a" (SYS_sleep), "n" (T_SYSCALL), "c" (p) :
-      "ebx");
+      "ebx");*/
 }
 
 void
@@ -1653,6 +1653,7 @@ fsfull()
   printf(1, "fsfull test\n");
 
   for(nfiles = 0; ; nfiles++){
+    int fd, total;
     char name[64];
     name[0] = 'f';
     name[1] = '0' + nfiles / 1000;
@@ -1661,12 +1662,12 @@ fsfull()
     name[4] = '0' + (nfiles % 10);
     name[5] = '\0';
     printf(1, "writing %s\n", name);
-    int fd = open(name, O_CREATE|O_RDWR);
+    fd = open(name, O_CREATE|O_RDWR);
     if(fd < 0){
       printf(1, "open %s failed\n", name);
       break;
     }
-    int total = 0;
+    total = 0;
     while(1){
       int cc = write(fd, buf, 512);
       if(cc < 512)
