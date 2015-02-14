@@ -1,6 +1,7 @@
 
-int __gaia_write(int n);
-int __gaia_read();
+extern int _putchar(int);
+#define putchar _putchar
+
+extern void _printf(const char*,...);
 
 void _putc(char);
-

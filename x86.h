@@ -22,7 +22,7 @@ static inline void
 outb(ushort port, uchar data)
 {
   //asm volatile("out %0,%1" : : "a" (data), "d" (port));
-  __gaia_write(data);
+  putchar(data);
 }
 
 static inline void
@@ -122,7 +122,7 @@ static inline uint
 xchg(volatile uint *addr, uint newval)
 {
   uint result;
-  
+
   // The + in "+m" denotes a read-modify-write operand.
   asm volatile("lock; xchgl %0, %1" :
                "+m" (*addr), "=a" (result) :
@@ -140,7 +140,7 @@ rcr2(void)
 }
 
 static inline void
-lcr3(uint val) 
+lcr3(uint val)
 {
   asm volatile("movl %0,%%cr3" : : "r" (val));
 }

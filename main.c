@@ -9,7 +9,10 @@
 //static void startothers(void);
 static void mpmain(void);
 extern pde_t *kpgdir;
-extern char end[]; // first address after kernel loaded from ELF file
+
+extern char __UCC_HEAP_START;
+char *end;
+//extern char end[]; // first address after kernel loaded from ELF file
 
 void init_global_var();
 
@@ -20,19 +23,18 @@ int
 main(void)
 {
   init_global_var();
-  /*
-  kinit1(end, P2V(4*1024*1024)); // phys page allocator
 
+  // virtual addr is not yet implemented?
+  //kinit1(end, P2V(4*1024*70)); // phys page allocator
   kvmalloc();      // kernel page table
   seginit();       // set up segments
   cprintf("\ncpu%d: starting xv6\n\n", cpu->id);
-  //picinit();       // interrupt controller
-  */
+
   consoleinit();   // I/O devices & their interrupts
   uartinit();      // serial port
 
   pinit();         // process table
-  tvinit();        // trap vectors
+  trapinit();        // trap vectors
   binit();         // buffer cache
   fileinit();      // file table
   iinit();         // inode cache
@@ -45,7 +47,6 @@ main(void)
   userinit();      // first user process
   // Finish setting up this processor in mpmain.
   mpmain();
-
 }
 
 
@@ -70,23 +71,21 @@ mpmain(void)
   scheduler();     // start running processes
 }
 
-
 // Boot page table used in entry.S and entryother.S.
 // Page directories (and page tables), must start on a page boundary,
 // hence the "__aligned__" attribute.
 // Use PTE_PS in page directory entry to enable 4Mbyte pages.
 
-
 pde_t entrypgdir[NPDENTRIES];
 
 void init_global_var() {
+  end = P2V(&__UCC_HEAP_START);
   // Map VA's [0, 4MB) to PA's [0, 4MB)
   entrypgdir[0] = (0) | PTE_P | PTE_W | PTE_PS;
   // Map VA's [KERNBASE, KERNBASE+4MB) to PA's [0, 4MB)
   entrypgdir[KERNBASE>>PDXSHIFT] = (0) | PTE_P | PTE_W | PTE_PS;
   return;
 }
-
 
 //PAGEBREAK!
 // Blank page.

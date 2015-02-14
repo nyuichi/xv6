@@ -56,6 +56,7 @@ void
 fileclose(struct file *f)
 {
   struct file ff;
+  extern void* memcpy(void*, const void*, uint);
 
   acquire(&ftable.lock);
   if(f->ref < 1)
@@ -64,11 +65,12 @@ fileclose(struct file *f)
     release(&ftable.lock);
     return;
   }
-  ff = *f;
+  //ff = *f;
+  memcpy(&ff,f,sizeof(ff));
   f->ref = 0;
   f->type = FD_NONE;
   release(&ftable.lock);
-  
+
   if(ff.type == FD_PIPE)
     pipeclose(ff.pipe, ff.writable);
   else if(ff.type == FD_INODE){
@@ -153,4 +155,3 @@ filewrite(struct file *f, char *addr, int n)
   }
   panic("filewrite");
 }
-

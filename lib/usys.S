@@ -2,11 +2,13 @@
 #include "traps.h"
 
 #define SYSCALL(name) \
-  .globl name; \
-  name: \
-    movl $SYS_ ## name, %eax; \
-    int $T_SYSCALL; \
-    ret
+  .global name; \
+  name:; \
+    nop; \
+    nop
+    #movl $SYS_ ## name, %eax; \
+    #int $T_SYSCALL; \
+    #ret
 
 SYSCALL(fork)
 SYSCALL(exit)
