@@ -33,6 +33,7 @@ AS = $(UCCDIR)/bin/as
 SIM = $(UCCDIR)/bin/sim
 CFLAGS = -I.
 ASFLAGS = -s
+VPATH = lib:usr
 
 xv6.img: kernelmemfs
 	dd if=kernelmemfs of=xv6.img conv=notrunc
@@ -45,7 +46,7 @@ bootblock: bootasm.S bootmain.c
 
 initcode: initcode.S
 	$(NATIVECC) -E -o _initcode.s $<
-	$(AS) $(ASFLAGS) _initcode.s -r -e 0 -o initcode
+	$(AS) _initcode.s -r -e 0 -o initcode
 
 # TODO: Concatenate initcode. Make the entry point proper one.
 kernel: $(ASMS) initcode
@@ -66,25 +67,19 @@ kernelmemfs: $(MEMFSASMS) initcode fs.img
 tags: $(ASMS) _init
 	etags *.S *.c
 
-ULIB = lib/_ulib.s lib/_usys.s lib/_printf.s lib/umalloc.s
+ULIB = lib/_ulib.s lib/_usys.s lib/_printf.s lib/_umalloc.s
 
 _%.s: %.S
-	$(NATIVECC) -E -o $@ $<
+	$(NATIVECC) -E -I. -o $@ $<
 
 _%.s: %.c
-	$(CC) $(CFLAGS) -s -o $@ $<
-
-lib/_%.s: lib/%.c
 	$(CC) $(CFLAGS) -s -o $@ $<
 
 lib/_usys.s: lib/usys.S
 	$(NATIVECC) -E -I. -o $@ $<
 	sed -i "s/;/\n/g" $@
 
-usr/_%.s: usr/%.c
-	$(CC) $(CFLAGS) -s -o $@ $<
-
-_%: usr/_%.s $(ULIB)
+_%: _%.s $(ULIB)
 	$(AS) -s -e 0 -o $@ $^ $(UCCLIBS) -f __UCC_HEAP_START
 
 _forktest: usr/_forktest.s $(ULIB)
@@ -127,8 +122,8 @@ clean:
 	initcode initcode.out kernel xv6.img fs.img kernelmemfs mkfs \
 	.gdbinit \
 	$(ASMS) \
-	$(UPROGS) \
-	lib/*.o lib/*.d lib/_*.s\
+	$(UPROGS) _*.s \
+	lib/*.o lib/*.d lib/_*.s \
 	usr/*.o usr/*.d usr/*.sym usr/*.asm usr/_*.s
 
 sim: xv6.img
