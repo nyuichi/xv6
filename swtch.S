@@ -7,22 +7,22 @@
 
 .global swtch
 swtch:
-#  movl 4(%esp), %eax
-#  movl 8(%esp), %edx
-#
-#  # Save old callee-save registers
-#  pushl %ebp
-#  pushl %ebx
-#  pushl %esi
-#  pushl %edi
-#
-#  # Switch stacks
-#  movl %esp, (%eax)
-#  movl %edx, %esp
-#
-#  # Load new callee-save registers
-#  popl %edi
-#  popl %esi
-#  popl %ebx
-#  popl %ebp
-#  ret
+  # Stash args
+  mov r1, [rbp+4]
+  mov r2, [rbp+8]
+
+  # Save old callee-save registers
+  push  rbp
+  push  r29
+  push  r28
+
+  # Switch stacks
+  mov [r1+0], rsp
+  mov rsp, r2
+
+  # Load new callee-save registers
+  pop r28
+  pop r29
+  pop rbp
+
+  ret

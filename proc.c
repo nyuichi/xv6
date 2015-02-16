@@ -62,15 +62,24 @@ found:
 
   // Set up new context to start executing at forkret,
   // which returns to trapret.
+  /* we don't need set stack to get return address
+   * instead, we set return address in forkret by inline assembly
   sp -= 4;
   *(uint*)sp = (uint)trapret;
+  */
 
   sp -= sizeof *p->context;
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
-  p->context->eip = (uint)forkret;
+  p->context->r28 = (uint)forkret;
 
   return p;
+}
+
+char*
+getkstack(void)
+{
+  return proc->kstack;
 }
 
 //PAGEBREAK: 32
@@ -89,13 +98,18 @@ userinit(void)
   inituvm(p->pgdir, _binary_initcode_start, (int)_binary_initcode_size);
   p->sz = PGSIZE;
   memset(p->tf, 0, sizeof(*p->tf));
+
+  /*
   p->tf->cs = (SEG_UCODE << 3) | DPL_USER;
   p->tf->ds = (SEG_UDATA << 3) | DPL_USER;
   p->tf->es = p->tf->ds;
   p->tf->ss = p->tf->ds;
   p->tf->eflags = FL_IF;
   p->tf->esp = PGSIZE;
-  p->tf->eip = 0;  // beginning of initcode.S
+  p->tf->eip = 0;  // beginning of init;
+  p->cwd = namei("/");
+code.S
+  */
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
   p->cwd = namei("/");
@@ -150,7 +164,7 @@ fork(void)
   memcpy(np->tf, proc->tf, sizeof(*np->tf));
 
   // Clear %eax so that fork returns 0 in the child.
-  np->tf->eax = 0;
+  np->tf->r1 = 0;
 
   for(i = 0; i < NOFILE; i++)
     if(proc->ofile[i])
@@ -311,7 +325,7 @@ sched(void)
     panic("sched locks");
   if(proc->state == RUNNING)
     panic("sched running");
-  if(readeflags()&FL_IF)
+  if(readiflg())
     panic("sched interruptible");
   intena = cpu->intena;
   swtch(&proc->context, cpu->scheduler);
@@ -346,6 +360,10 @@ forkret(void)
   }
 
   // Return to "caller", actually trapret (see allocproc).
+  __asm("\
+      mov r28, trapret  \n\
+      ret               \n\
+  ");
 }
 
 // Atomically release lock and sleep on chan.
@@ -459,7 +477,7 @@ procdump(void)
       state = "???";
     cprintf("%d %s %s", p->pid, state, p->name);
     if(p->state == SLEEPING){
-      getcallerpcs((uint*)p->context->ebp+2, pc);
+      getcallerpcs((uint*)p->context->rbp+2, pc);
       for(i=0; i<10 && pc[i] != 0; i++)
         cprintf(" %p", pc[i]);
     }

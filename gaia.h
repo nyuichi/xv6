@@ -1,70 +1,113 @@
 #include "ucc.h"
 
 // copy
-// Routines to let C code use special x86 instructions.
+// Routines to let C code use special GAIA instructions.
 static inline uchar
 inb(ushort port)
 {
-  uchar data;
-
-  //asm volatile("in %1,%0" : "=a" (data) : "d" (port));
-  return data;
+  __asm("\
+      mov r2, [rbp+4] \n\
+      ld  r1, r2, 0   \n\
+      ret             \n\
+  ");
 }
 
 static inline void
 insl(int port, void *addr, int cnt)
 {
-  /*
-  asm volatile("cld; rep insl" :
-               "=D" (addr), "=c" (cnt) :
-               "d" (port), "0" (addr), "1" (cnt) :
-               "memory", "cc");
-  */
+  __asm("\
+      mov r1, [rbp+4]     \n\
+      mov r2, [rbp+8]     \n\
+      mov r3, [rbp+12]    \n\
+    insl_L1:              \n\
+      blt r3, 0, insl_L2  \n\
+      sub r3, r3, 1       \n\
+      ld  r4, r1, 0       \n\
+      st  r4, r2, 0       \n\
+      add r2, r2, 4       \n\
+      add r3, r3, 4       \n\
+      br  insl_L1         \n\
+    insl_L2:              \n\
+      ret                 \n\
+  ");
 }
 
 static inline void
 outb(ushort port, uchar data)
 {
-  //asm volatile("out %0,%1" : : "a" (data), "d" (port));
+  __asm("\
+      mov r1, [rbp+4]   \n\
+      mov r2, [rbp+8]   \n\
+      st  r2, r1, 0     \n\
+      ret               \n\
+  ");
 }
 
 static inline void
 outw(ushort port, ushort data)
 {
-  //asm volatile("out %0,%1" : : "a" (data), "d" (port));
+  __asm("\
+      mov r1, [rbp+4]   \n\
+      mov r2, [rbp+8]   \n\
+      st  r2, r1, 0     \n\
+      ret               \n\
+  ");
 }
 
 static inline void
 outsl(int port, const void *addr, int cnt)
 {
-  /*
-  asm volatile("cld; rep outsl" :
-               "=S" (addr), "=c" (cnt) :
-               "d" (port), "0" (addr), "1" (cnt) :
-               "cc");
-  */
+  __asm("\
+      mov r1, [rbp+4]       \n\
+      mov r2, [rbp+8]       \n\
+      mov r3, [rbp+12]      \n\
+    outsl_L1:               \n\
+      blt r3, 0, outsl_L2   \n\
+      sub r3, r3, 1         \n\
+      ld  r4, r2, 0         \n\
+      st  r4, r1, 0         \n\
+      add r2, r2, 4         \n\
+      add r3, r3, 4         \n\
+      br  outsl_L1          \n\
+    outsl_L2:               \n\
+      ret                   \n\
+  ");
 }
 
 static inline void
 stosb(void *addr, int data, int cnt)
 {
-  /*
-    asm volatile("cld; rep stosb" :
-               "=D" (addr), "=c" (cnt) :
-               "0" (addr), "1" (cnt), "a" (data) :
-               "memory", "cc");
-  */
+  __asm("\
+      mov r1, [rbp+4]       \n\
+      mov r2, [rbp+8]       \n\
+      mov r3, [rbp+12]      \n\
+    stosb_L1:               \n\
+      blt r3, 0, stosb_L2   \n\
+      sub r3, r3, 1         \n\
+      st  r2, r1, 0         \n\
+      add r3, r3, 4         \n\
+      br  stosb_L1          \n\
+    stosb_L2:               \n\
+      ret                   \n\
+  ");
 }
 
 static inline void
 stosl(void *addr, int data, int cnt)
 {
-  /*
-  asm volatile("cld; rep stosl" :
-               "=D" (addr), "=c" (cnt) :
-               "0" (addr), "1" (cnt), "a" (data) :
-               "memory", "cc");
-  */
+  __asm("\
+      mov r1, [rbp+4]       \n\
+      mov r2, [rbp+8]       \n\
+      mov r3, [rbp+12]      \n\
+    stosl_L1:               \n\
+      blt r3, 0, stosl_L2   \n\
+      sub r3, r3, 1         \n\
+      st  r2, r1, 0         \n\
+      add r3, r3, 4         \n\
+      br  stosl_L1          \n\
+    stosl_L2:               \n\
+      ret                   \n\
+  ");
 }
 
 //struct segdesc;
@@ -102,14 +145,6 @@ ltr(ushort sel)
   //asm volatile("ltr %0" : : "r" (sel));
 }
 
-static inline uint
-readeflags(void)
-{
-  uint eflags;
-  //asm volatile("pushfl; popl %0" : "=r" (eflags));
-  return eflags;
-}
-
 static inline void
 loadgs(ushort v)
 {
@@ -119,13 +154,20 @@ loadgs(ushort v)
 static inline void
 cli(void)
 {
-  //asm volatile("cli");
+  outb(0x2104, 0);
 }
 
 static inline void
 sti(void)
 {
-  //asm volatile("sti");
+  outb(0x2104, 1);
+}
+
+// read interrupt flag
+static inline uchar
+readiflg(void)
+{
+  return inb(0x2104);
 }
 
 static inline uint
@@ -157,40 +199,57 @@ lcr3(uint val)
   //asm volatile("movl %0,%%cr3" : : "r" (val));
 }
 
+// read trap no
+static inline uint
+readtrapno()
+{
+  return inb(0x210C);
+}
+// read trap return address
+static inline uint 
+readtreturn()
+{
+  return inb(0x2108);
+}
+
 //PAGEBREAK: 36
 // Layout of the trap frame built on the stack by the
 // hardware and by trapasm.S, and passed to trap().
 struct trapframe {
-  // registers as pushed by pusha
-  uint edi;
-  uint esi;
-  uint ebp;
-  uint oesp;      // useless & ignored
-  uint ebx;
-  uint edx;
-  uint ecx;
-  uint eax;
-
-  // rest of trap frame
-  ushort gs;
-  ushort padding1;
-  ushort fs;
-  ushort padding2;
-  ushort es;
-  ushort padding3;
-  ushort ds;
-  ushort padding4;
+  // trapno: set in trap.c
   uint trapno;
+  uint retaddr;
 
-  // below here defined by x86 hardware
-  uint err;
-  uint eip;
-  ushort cs;
-  ushort padding5;
-  uint eflags;
-
-  // below here only when crossing rings, such as from user to kernel
-  uint esp;
-  ushort ss;
-  ushort padding6;
+  // general registers
+  uint r31;
+  uint r30;
+  uint r29;
+  uint r28;
+  uint r27;
+  uint r26;
+  uint r25;
+  uint r24;
+  uint r23;
+  uint r22;
+  uint r21;
+  uint r20;
+  uint r19;
+  uint r18;
+  uint r17;
+  uint r16;
+  uint r15;
+  uint r14;
+  uint r13;
+  uint r12;
+  uint r11;
+  uint r10;
+  uint r9;
+  uint r8;
+  uint r7;
+  uint r6;
+  uint r5;
+  uint r4;
+  uint r3;
+  uint r2;
+  uint r1;
 };
