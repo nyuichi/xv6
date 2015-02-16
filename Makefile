@@ -1,4 +1,6 @@
 ASMS = \
+        _entryasm.s\
+	_entry.s\
 	_bio.s\
 	_console.s\
 	_exec.s\
@@ -26,31 +28,39 @@ ASMS = \
 
 NATIVECC = clang
 UCCDIR = ../ucc
+GAIASOFTDIR = ../gaia-software
 UCCLIBS = $(UCCDIR)/lib/libucc.s
 
 CC = $(UCCDIR)/bin/ucc
-AS = $(UCCDIR)/bin/as
-SIM = $(UCCDIR)/bin/sim
+ifeq ($(wildcard $(GAIASOFTDIR)),) # if gaia-software does not exist then
+  AS = $(UCCDIR)/bin/as
+  SIM = $(UCCDIR)/bin/sim
+else
+  AS = $(GAIASOFTDIR)/asm.py
+  SIM = $(GAIASOFTDIR)/sim
+endif
+
 CFLAGS = -I.
-ASFLAGS = -s
+ASFLAGS = -s -Wno-unused-label
+SIMFLAGS = -no-interrupt -stat
 VPATH = lib:usr
 
 xv6.img: kernelmemfs
-	dd if=kernelmemfs of=xv6.img conv=notrunc
+	dd if=kernelmemfs of=xv6.img
 
 xv6nomemfs.img: kernel fs.img
-	dd if=kernel of=xv6nomemfs.img conv=notrunc
+	dd if=kernel of=xv6nomemfs.img
 
 bootblock: bootasm.S bootmain.c
 	# TODO: do nothing now
 
 initcode: initcode.S
 	$(NATIVECC) -E -o _initcode.s $<
-	$(AS) _initcode.s -r -e 0 -o initcode
+	$(AS) -Wno-unused-label _initcode.s -r -e 0 -o initcode
 
-# TODO: Concatenate initcode. Make the entry point proper one.
+# TODO: Concatenate initcode.
 kernel: $(ASMS) initcode
-	$(AS) $(ASFLAGS) -o kernel $(ASMS) $(UCCLIBS) -f __UCC_HEAP_START
+	$(AS) $(ASFLAGS) -o kernel -e 0x80003000 -start _start $(ASMS) $(UCCLIBS) -f __UCC_HEAP_START
 
 # kernelmemfs is a copy of kernel that maintains the
 # disk image in memory instead of writing to a disk.
@@ -59,10 +69,10 @@ kernel: $(ASMS) initcode
 # great for testing the kernel on real hardware without
 # needing a scratch disk.
 # We use memfs as default because our CPU architecture has no disk.
-# TODO: Concatenate initcode and fs.img. Make the entry point proper one.
+# TODO: Concatenate initcode and fs.img.
 MEMFSASMS = $(filter-out _ide.s,$(ASMS)) _memide.s
 kernelmemfs: $(MEMFSASMS) initcode fs.img
-	$(AS) $(ASFLAGS) -o kernelmemfs $(MEMFSASMS) $(UCCLIBS) -f __UCC_HEAP_START
+	$(AS) $(ASFLAGS) -o kernelmemfs -e 0x80003000 -start _start $(MEMFSASMS) $(UCCLIBS) -f __UCC_HEAP_START
 
 tags: $(ASMS) _init
 	etags *.S *.c
@@ -80,10 +90,10 @@ lib/_usys.s: lib/usys.S
 	sed -i "s/;/\n/g" $@
 
 _%: _%.s $(ULIB)
-	$(AS) -s -e 0 -o $@ $^ $(UCCLIBS) -f __UCC_HEAP_START
+	$(AS) $(ASFLAGS) -e 0 -o $@ $^ $(UCCLIBS) -f __UCC_HEAP_START
 
 _forktest: usr/_forktest.s $(ULIB)
-	$(AS) -s -e 0 -o $@ usr/_forktest.s lib/_ulib.s lib/_usys.s $(UCCLIBS) -f __UCC_HEAP_START
+	$(AS) $(ASFLAGS) -e 0 -o $@ usr/_forktest.s lib/_ulib.s lib/_usys.s $(UCCLIBS) -f __UCC_HEAP_START
 
 mkfs: tools/mkfs.c fs.h
 	gcc -Werror -Wall -o mkfs tools/mkfs.c -I.. -idirafter . -g
@@ -127,4 +137,7 @@ clean:
 	usr/*.o usr/*.d usr/*.sym usr/*.asm usr/_*.s
 
 sim: xv6.img
-	$(SIM) -no-interrupt xv6.img
+	$(SIM) $(SIMFLAGS) xv6.img
+
+sim-meta-gdb: xv6.img
+	gdb -tui --args $(SIM) $(SIMFLAGS) xv6.img

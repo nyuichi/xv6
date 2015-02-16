@@ -80,10 +80,6 @@ pde_t entrypgdir[NPDENTRIES];
 
 void init_global_var() {
   end = P2V(&__UCC_HEAP_START);
-  // Map VA's [0, 4MB) to PA's [0, 4MB)
-  entrypgdir[0] = (0) | PTE_P | PTE_W | PTE_PS;
-  // Map VA's [KERNBASE, KERNBASE+4MB) to PA's [0, 4MB)
-  entrypgdir[KERNBASE>>PDXSHIFT] = (0) | PTE_P | PTE_W | PTE_PS;
   return;
 }
 
