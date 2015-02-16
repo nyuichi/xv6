@@ -36,6 +36,9 @@ idtinit(void)
 void
 trap(struct trapframe *tf)
 {
+  tf->trapno = readtrapno();
+  tf->retaddr= readtreturn();
+
   if(tf->trapno == T_SYSCALL){
     if(proc->killed)
       exit();
@@ -93,8 +96,8 @@ trap(struct trapframe *tf)
             proc->pid, proc->name, tf->trapno, tf->err, cpu->id, tf->eip,
             rcr2());
     */
-     cprintf("pid %d %s: trap %d err %d --kill proc\n",
-            proc->pid, proc->name, tf->trapno, tf->err);
+     cprintf("pid %d %s: trap %d --kill proc\n",
+            proc->pid, proc->name, tf->trapno);
     proc->killed = 1;
   }
 

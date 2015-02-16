@@ -1,8 +1,18 @@
 #include "mmu.h"
+#include "proc.h"
 
-  # vectors.S sends all traps here.
 .global alltraps
 alltraps:
+  # stack: User -> Kernel
+  push rsp
+  push r1
+  push r2
+  mov  r2, getkstack
+  call r2
+  pop  r2
+  mov  rsp, r1
+  pop  r1
+
   # Build trap frame.
   push r1
   push r2
@@ -36,6 +46,10 @@ alltraps:
   push r30
   push r31
 
+  # Set in trap
+  push r1  # dummy for trapno
+  push r1  # dummy for return address
+
   # Call trap(tf), where tf=%esp
   push rsp
   call trap
@@ -44,10 +58,14 @@ alltraps:
   # Return falls through to trapret...
 .global trapret
 trapret:
+  pop r28 # rsp   pop
+  pop r1  # dummy pop
+
   pop r31 
   pop r30 
   pop r29 
-  pop r28 
+          # pop   r28 
+  pop r27 # dummy pop
   pop r27 
   pop r26 
   pop r25 
@@ -75,6 +93,8 @@ trapret:
   pop r3 
   pop r2 
   pop r1
+
+  # stack: Kernel -> User
+  pop rsp
   
-  #add rsp, rsp, 8  # trapno and errcode
   ret

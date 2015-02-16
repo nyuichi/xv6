@@ -105,7 +105,7 @@ cpunum(void)
   // almost everything, including cprintf and panic, calls cpu,
   // often indirectly through acquire and release.
 
-  if(readiflg(){
+  if(readiflg()){
     static int n;
     if(n++ == 0)
       cprintf("cpu called from %s with interrupts enabled\n",

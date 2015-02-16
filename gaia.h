@@ -204,10 +204,27 @@ lcr3(uint val)
   //asm volatile("movl %0,%%cr3" : : "r" (val));
 }
 
+// read trap no
+static inline uint
+readtrapno()
+{
+  return inb(0x210C);
+}
+// read trap return address
+static inline uint 
+readtreturn()
+{
+  return inb(0x2108);
+}
+
 //PAGEBREAK: 36
 // Layout of the trap frame built on the stack by the
 // hardware and by trapasm.S, and passed to trap().
 struct trapframe {
+  // trapno: set in trap.c
+  uint trapno;
+  uint retaddr;
+
   // general registers
   uint r31;
   uint r30;
@@ -240,14 +257,4 @@ struct trapframe {
   uint r3;
   uint r2;
   uint r1;
-
-  // rest of trap frame
-  uint trapno;
-
-  // below here defined by x86 hardware
-  uint err;
-  uint eip;
-
-  // below here only when crossing rings, such as from user to kernel
-  uint esp;
 };
