@@ -11,15 +11,6 @@ extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()
 //struct segdesc gdt[NSEGS];
 
-// Set up CPU's kernel segment descriptors.
-// Run once on entry on each CPU.
-void
-seginit(void)
-{
-  // Initialize cpu-local storage.
-  cpu = &cpus[0];
-  proc = 0;
-}
 
 // Return the address of the PTE in page table pgdir
 // that corresponds to virtual address va.  If alloc!=0,
@@ -52,13 +43,13 @@ walkpgdir(pde_t *pgdir, const void *va, int alloc)
 static int
 mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)
 {
-  char *a, *last;
+  uint a, last;
   pte_t *pte;
 
-  a = (char*)PGROUNDDOWN((uint)va);
-  last = (char*)PGROUNDDOWN(((uint)va) + size - 1);
+  a = PGROUNDDOWN((uint)va);
+  last = PGROUNDDOWN(((uint)va) + size - 1);
   for(;;){
-    if((pte = walkpgdir(pgdir, a, 1)) == 0)
+    if((pte = walkpgdir(pgdir, (char*)a, 1)) == 0)
       return -1;
     if(*pte & PTE_P)
       panic("remap");
@@ -139,7 +130,7 @@ kvmalloc(void)
 void
 switchkvm(void)
 {
-  *(int*)PDEADDR = v2p(kpgdir);   // switch to the kernel page table
+  *(int*)P2V(PDEADDR) = v2p(kpgdir);   // switch to the kernel page table
 }
 
 // Switch TSS and h/w page table to correspond to process p.

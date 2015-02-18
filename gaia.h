@@ -1,4 +1,5 @@
 #include "ucc.h"
+#include "memlayout.h"
 
 // copy
 // Routines to let C code use special GAIA instructions.
@@ -136,20 +137,20 @@ loadgs(ushort v)
 static inline void
 cli(void)
 {
-  outb(0x2104, 0);
+  *(int*)P2V(INTENABLE) = 0;
 }
 
 static inline void
 sti(void)
 {
-  outb(0x2104, 1);
+  *(int*)P2V(INTENABLE) = 1;
 }
 
 // read interrupt flag
 static inline uchar
 readiflg(void)
 {
-  return inb(0x2104);
+  return *(int*)P2V(INTENABLE);
 }
 
 static inline uint

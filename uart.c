@@ -40,7 +40,7 @@ uartputc(int c)
     return;
   for(i = 0; i < 128; i++)
     microdelay(10);
-  *(int*)SERIAL = c;
+  *(int*)P2V(SERIAL) = c;
 }
 
 static int

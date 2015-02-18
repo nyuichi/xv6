@@ -19,7 +19,7 @@ extern void alltraps();
 void
 trapinit(void)
 {
-  *(int*)INTHANDLER = (int)alltraps;
+  *(int*)P2V(INTHANDLER) = (int)alltraps;
   initlock(&tickslock, "time");
 }
 
