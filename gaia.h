@@ -77,37 +77,19 @@ outsl(int port, const void *addr, int cnt)
 static inline void
 stosb(void *addr, int data, int cnt)
 {
-  __asm("\
-      mov r1, [rbp+4]       \n\
-      mov r2, [rbp+8]       \n\
-      mov r3, [rbp+12]      \n\
-    stosb_L1:               \n\
-      blt r3, 0, stosb_L2   \n\
-      sub r3, r3, 1         \n\
-      st  r2, r1, 0         \n\
-      add r3, r3, 4         \n\
-      br  stosb_L1          \n\
-    stosb_L2:               \n\
-      ret                   \n\
-  ");
+  int i;
+  for (i = 0; i < cnt; i++) {
+    *(((char *) addr) + i) = (char) data;
+  }
 }
 
 static inline void
 stosl(void *addr, int data, int cnt)
 {
-  __asm("\
-      mov r1, [rbp+4]       \n\
-      mov r2, [rbp+8]       \n\
-      mov r3, [rbp+12]      \n\
-    stosl_L1:               \n\
-      blt r3, 0, stosl_L2   \n\
-      sub r3, r3, 1         \n\
-      st  r2, r1, 0         \n\
-      add r3, r3, 4         \n\
-      br  stosl_L1          \n\
-    stosl_L2:               \n\
-      ret                   \n\
-  ");
+  int i;
+  for (i = 0; i < cnt; i++) {
+    *(((int *) addr) + i) = data;
+  }
 }
 
 //struct segdesc;
