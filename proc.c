@@ -87,8 +87,7 @@ void
 userinit(void)
 {
   struct proc *p;
-  // extern char _binary_initcode_start[], *_binary_initcode_size[];
-  char *_binary_initcode_start, *_binary_initcode_size;
+  extern char _binary_initcode_start[], _binary_initcode_size[];
 
   p = allocproc();
 
