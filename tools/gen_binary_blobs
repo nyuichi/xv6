@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+
+def main
+  if ARGV.length < 2
+    STDERR.puts "Usage: ./gen_binary_blob kernelsize binary_files ..."
+    exit
+  end
+  emit_binary_blobs(Integer(ARGV[0]), ARGV[1..-1])
+end
+
+def error(msg)
+  STDERR.puts "mgs"
+  exit 1
+end
+
+def emit_binary_blobs(offset, filenames)
+  out = open("_binary_blobs.s", "w")
+  filenames.each do |filename|
+    begin
+      file = open(filename)
+      labelname = c_var_name(filename)
+      out.puts <<-EOS.gsub(/^[ ]*/, "")   # unindent
+        .global _binary_#{labelname}_start
+        .set _binary_#{labelname}_start, 0x#{"%08x" % offset}
+
+        .global _binary_#{labelname}_end
+        .set _binary_#{labelname}_end, 0x#{"%08x" % (offset + file.size)}
+
+        .global _binary_#{labelname}_size
+        .set _binary_#{labelname}_size, 0x#{"%08x" % file.size}
+
+      EOS
+      offset += file.size
+      file.close
+    rescue Errno::ENOENT
+      error "No such file: #{filename}"
+    end
+  end
+  out.close
+end
+
+def c_var_name(filename)
+  filename.gsub(/^[0-9]+/, "_").gsub(/[^a-zA-Z0-9]/, "_")
+end
+
+main
