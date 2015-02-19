@@ -41,7 +41,7 @@ else
 endif
 
 CFLAGS = -I.
-ASFLAGS = -s -Wno-unused-label
+ASFLAGS = -s -Wno-unused-label -c
 SIMFLAGS = -no-interrupt -stat
 VPATH = lib:usr
 
@@ -58,9 +58,14 @@ initcode: initcode.S
 	$(NATIVECC) -E -o _initcode.s $<
 	$(AS) -Wno-unused-label _initcode.s -r -e 0 -o initcode
 
-# TODO: Concatenate initcode.
-kernel: $(ASMS) initcode
-	$(AS) $(ASFLAGS) -o kernel -e 0x80003000 -start _start $(ASMS) $(UCCLIBS) -f __UCC_HEAP_START
+kernel: $(ASMS) initcode 
+	./tools/gen_binary_blobs 0 initcode
+	$(AS) $(ASFLAGS) -o _kernel -e 0x80003000 -start _start $(ASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
+	./tools/gen_binary_blobs `ruby -e "print open('_kernel').size + 0x80003000"` initcode
+	$(AS) $(ASFLAGS) -o _kernel -e 0x80003000 -start _start $(ASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
+	cat _kernel initcode > kernel
+	rm _kernel
+	./tools/attach_boot_header kernel
 
 # kernelmemfs is a copy of kernel that maintains the
 # disk image in memory instead of writing to a disk.
@@ -69,10 +74,15 @@ kernel: $(ASMS) initcode
 # great for testing the kernel on real hardware without
 # needing a scratch disk.
 # We use memfs as default because our CPU architecture has no disk.
-# TODO: Concatenate initcode and fs.img.
 MEMFSASMS = $(filter-out _ide.s,$(ASMS)) _memide.s
 kernelmemfs: $(MEMFSASMS) initcode fs.img
-	$(AS) $(ASFLAGS) -o kernelmemfs -e 0x80003000 -start _start $(MEMFSASMS) $(UCCLIBS) -f __UCC_HEAP_START
+	./tools/gen_binary_blobs 0 initcode fs.img
+	$(AS) $(ASFLAGS) -o _kernelmemfs -e 0x80003000 -start _start $(MEMFSASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
+	./tools/gen_binary_blobs `ruby -e "print open('_kernelmemfs').size + 0x80003000"` initcode fs.img
+	$(AS) $(ASFLAGS) -o _kernelmemfs -e 0x80003000 -start _start $(MEMFSASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
+	cat _kernelmemfs initcode fs.img > kernelmemfs
+	rm _kernelmemfs
+	./tools/attach_boot_header kernelmemfs
 
 tags: $(ASMS) _init
 	etags *.S *.c

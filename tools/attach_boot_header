@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+require 'tempfile'
+
+def main
+  if ARGV.length < 1
+    STDERR.puts "Usage: ./attach_exec_header binary_file"
+    exit
+  end
+  attach_exec_header(ARGV[0])
+end
+
+def attach_exec_header(filename)
+  result = Tempfile.new(filename)
+  open(filename, 'rb') do |f|
+    header = [f.size].pack("l>")  # header is just a 4 byte filesize integer with big endian
+    result.write(header)
+    result.write(f.read)
+  end
+  open(filename, "wb") do |f|
+    result.rewind
+    IO.copy_stream(result, f)
+  end
+  result.unlink
+end
+
+main
