@@ -55,7 +55,7 @@ found:
     p->state = UNUSED;
     return 0;
   }
-  sp = p->kstack + KSTACKSIZE;
+  sp = (char*)((uint)p->kstack + KSTACKSIZE);
 
   // Leave room for trap frame.
   sp -= sizeof *p->tf;
@@ -65,8 +65,6 @@ found:
   // which returns to trapret.
   /* we don't need set stack to get return address
    * instead, we set return address in forkret by inline assembly
-  sp -= 4;
-  *(uint*)sp = (uint)trapret;
   */
 
   sp -= sizeof *p->context;
@@ -93,9 +91,11 @@ userinit(void)
   char *_binary_initcode_start, *_binary_initcode_size;
 
   p = allocproc();
+
   initproc = p;
   if((p->pgdir = setupkvm()) == 0)
     panic("userinit: out of memory?");
+  
   inituvm(p->pgdir, _binary_initcode_start, (int)_binary_initcode_size);
   p->sz = PGSIZE;
   memset(p->tf, 0, sizeof(*p->tf));
@@ -286,7 +286,6 @@ scheduler(void)
   struct proc *p;
 
   for(;;){
-    cprintf("scheduler\n");
     // Enable interrupts on this processor.
     sti();
 

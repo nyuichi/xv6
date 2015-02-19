@@ -54,7 +54,7 @@ main(void)
   kinit2(P2V(512*1024), P2V(PHYSTOP)); // must come after startothers()
 
   cprintf("userinit...\n");
-  //userinit();      // first user process
+  userinit();      // first user process
   cprintf("mpmain...\n");
   // Finish setting up this processor in mpmain.
   mpmain();
