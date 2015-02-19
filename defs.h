@@ -57,11 +57,6 @@ void            ideinit(void);
 void            ideintr(void);
 void            iderw(struct buf*);
 
-// ioapic.c
-void            ioapicenable(int irq, int cpu);
-extern uchar    ioapicid;
-void            ioapicinit(void);
-
 // kalloc.c
 char*           kalloc(void);
 void            kfree(char*);
@@ -88,9 +83,7 @@ void            end_op();
 
 // mp.c
 extern int      ismp;
-int             mpbcpu(void);
 void            mpinit(void);
-void            mpstartthem(void);
 
 // picirq.c
 void            picenable(int);
@@ -164,7 +157,6 @@ void            uartintr(void);
 void            uartputc(int);
 
 // vm.c
-void            seginit(void);
 void            kvmalloc(void);
 void            vmenable(void);
 pde_t*          setupkvm(void);

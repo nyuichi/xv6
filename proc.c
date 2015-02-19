@@ -13,6 +13,7 @@ struct {
 } ptable;
 
 static struct proc *initproc;
+struct proc *proc = 0;
 
 int nextpid = 1;
 extern void forkret(void);
@@ -285,6 +286,7 @@ scheduler(void)
   struct proc *p;
 
   for(;;){
+    cprintf("scheduler\n");
     // Enable interrupts on this processor.
     sti();
 

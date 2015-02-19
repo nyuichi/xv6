@@ -24,9 +24,6 @@
 void
 timerinit(void)
 {
-  // Interrupt 100 times/sec.
-  outb(TIMER_MODE, TIMER_SEL0 | TIMER_RATEGEN | TIMER_16BIT);
-  outb(IO_TIMER1, TIMER_DIV(100) % 256);
-  outb(IO_TIMER1, TIMER_DIV(100) / 256);
-  picenable(IRQ_TIMER);
+  // The timer on our GAIA board always causes interrupts 100 times/sec,
+  // and we have no method to configure it. So, do nothing here.
 }

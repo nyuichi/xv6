@@ -25,26 +25,37 @@ main(void)
   init_global_var();
 
   // virtual addr is not yet implemented?
-  //kinit1(end, P2V(4*1024*70)); // phys page allocator
+  uartinit();      // early uartinit to enbale cprintf for debug purpose
+  kinit1(end, P2V(512*1024)); // phys page allocator
   kvmalloc();      // kernel page table
-  seginit();       // set up segments
+  mpinit();       // collect info about this machine
   cprintf("\ncpu%d: starting xv6\n\n", cpu->id);
 
   consoleinit();   // I/O devices & their interrupts
   uartinit();      // serial port
 
+  cprintf("pinit...\n");
   pinit();         // process table
+  cprintf("trapinit...\n");
   trapinit();        // trap vectors
+  cprintf("binit...\n");
   binit();         // buffer cache
+  cprintf("fileinit...\n");
   fileinit();      // file table
+  cprintf("iinit...\n");
   iinit();         // inode cache
+  cprintf("ideinit...\n");
   ideinit();       // disk
+  cprintf("timerinit...\n");
   if(!ismp)
     timerinit();   // uniprocessor timer
 
-  kinit2(P2V(4*1024*1024), P2V(PHYSTOP)); // must come after startothers()
+  cprintf("kinit2...\n");
+  kinit2(P2V(512*1024), P2V(PHYSTOP)); // must come after startothers()
 
-  userinit();      // first user process
+  cprintf("userinit...\n");
+  //userinit();      // first user process
+  cprintf("mpmain...\n");
   // Finish setting up this processor in mpmain.
   mpmain();
 }
@@ -67,7 +78,7 @@ mpmain(void)
 {
   cprintf("cpu%d: starting\n", cpu->id);
   idtinit();       // load idt register
-  xchg(&cpu->started, 1); // tell startothers() we're up
+  cpu->started = 1;
   scheduler();     // start running processes
 }
 
@@ -79,11 +90,7 @@ mpmain(void)
 pde_t entrypgdir[NPDENTRIES];
 
 void init_global_var() {
-  end = P2V(&__UCC_HEAP_START);
-  // Map VA's [0, 4MB) to PA's [0, 4MB)
-  entrypgdir[0] = (0) | PTE_P | PTE_W | PTE_PS;
-  // Map VA's [KERNBASE, KERNBASE+4MB) to PA's [0, 4MB)
-  entrypgdir[KERNBASE>>PDXSHIFT] = (0) | PTE_P | PTE_W | PTE_PS;
+  end = (char*)&__UCC_HEAP_START;
   return;
 }
 

@@ -45,10 +45,10 @@ kinit2(void *vstart, void *vend)
 void
 freerange(void *vstart, void *vend)
 {
-  char *p;
-  p = (char*)PGROUNDUP((uint)vstart);
-  for(; p + PGSIZE <= (char*)vend; p += PGSIZE)
-    kfree(p);
+  uint p;
+  p = PGROUNDUP((uint)vstart);
+  for(; p + PGSIZE <= (uint)vend; p += PGSIZE)
+    kfree((char*)p);
 }
 
 //PAGEBREAK: 21
@@ -65,7 +65,6 @@ kfree(char *v)
     panic("kfree");
 
   // Fill with junk to catch dangling refs.
-  memset(v, 1, PGSIZE);
 
   if(kmem.use_lock)
     acquire(&kmem.lock);
