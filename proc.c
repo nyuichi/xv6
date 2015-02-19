@@ -100,17 +100,8 @@ userinit(void)
   p->sz = PGSIZE;
   memset(p->tf, 0, sizeof(*p->tf));
 
-  /*
-  p->tf->cs = (SEG_UCODE << 3) | DPL_USER;
-  p->tf->ds = (SEG_UDATA << 3) | DPL_USER;
-  p->tf->es = p->tf->ds;
-  p->tf->ss = p->tf->ds;
-  p->tf->eflags = FL_IF;
-  p->tf->esp = PGSIZE;
-  p->tf->eip = 0;  // beginning of init;
-  p->cwd = namei("/");
-code.S
-  */
+  p->tf->r30     = PGSIZE;
+  p->tf->retaddr = 0; // -4 ?
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
   p->cwd = namei("/");
@@ -286,15 +277,17 @@ scheduler(void)
   struct proc *p;
 
   for(;;){
+    cprintf("scheduler!\n");
     // Enable interrupts on this processor.
     sti();
 
+    cprintf("wow!\n");
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
-
+      cprintf("loop!\n");
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
@@ -359,6 +352,8 @@ forkret(void)
     first = 0;
     initlog();
   }
+
+  cprintf("forkret\n");
 
   // Return to "caller", actually trapret (see allocproc).
   __asm("\

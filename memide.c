@@ -36,7 +36,7 @@ ideintr(void)
 // Else if B_VALID is not set, read buf from disk, set B_VALID.
 void
 iderw(struct buf *b)
-{
+{/*
   uchar *p;
 
   if(!(b->flags & B_BUSY))
@@ -56,4 +56,5 @@ iderw(struct buf *b)
   } else
     memmove(b->data, p, 512);
   b->flags |= B_VALID;
+  */
 }
