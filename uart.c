@@ -36,10 +36,8 @@ void
 uartputc(int c)
 {
   int i;
-  /* cprintf is used before uartinit @main.c, but cprintf uses uartputc.
   if(!uart)
     return;
-  */
   for(i = 0; i < 128; i++)
     microdelay(10);
   *(int*)P2V(SERIAL) = c;

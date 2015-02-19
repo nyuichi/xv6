@@ -25,7 +25,8 @@ main(void)
   init_global_var();
 
   // virtual addr is not yet implemented?
-  //kinit1(end, end + 4*1024*70/4); // phys page allocator
+  uartinit();      // early uartinit to enbale cprintf for debug purpose
+  kinit1(end, P2V(512*1024)); // phys page allocator
   kvmalloc();      // kernel page table
   mpinit();       // collect info about this machine
   cprintf("\ncpu%d: starting xv6\n\n", cpu->id);
@@ -35,15 +36,22 @@ main(void)
 
   cprintf("pinit...\n");
   pinit();         // process table
-  trapinit();      // trap vectors
+  cprintf("trapinit...\n");
+  trapinit();        // trap vectors
+  cprintf("binit...\n");
   binit();         // buffer cache
   cprintf("fileinit...\n");
   fileinit();      // file table
   cprintf("iinit...\n");
   iinit();         // inode cache
-  //ideinit();     // @memide.c
+  cprintf("ideinit...\n");
+  ideinit();       // disk
+  cprintf("timerinit...\n");
+  if(!ismp)
+    timerinit();   // uniprocessor timer
 
-  kinit2(end + 4*1024*70/4, P2V(PHYSTOP)); // must come after startothers()
+  cprintf("kinit2...\n");
+  kinit2(P2V(512*1024), P2V(PHYSTOP)); // must come after startothers()
 
   cprintf("userinit...\n");
   //userinit();      // first user process
