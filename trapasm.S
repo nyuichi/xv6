@@ -4,18 +4,16 @@
 .global alltraps
 alltraps:
   # stack: User -> Kernel
-  #push rsp
-#  push r1
-#  mov  r1, proc
-#  mov  r1, [r1]
-#  mov  r1, [r1+8]
-##  push r2
-##  mov  r2, getkstack
-##  call r2
-##  pop  r2
-#  mov  rsp, r1
-#  pop  r1
-
+  push rsp
+  push r1
+  mov r1, proc
+  mov r1, [r1]
+  bz  r1, alltraps_trapframe
+alltraps_stackchange:
+  mov  r1, [r1+8]
+  mov  rsp, r1
+alltraps_trapframe:
+  pop  r1
   # Build trap frame.
   push r1
   push r2
@@ -102,6 +100,6 @@ trapret:
   pop r1
 
   # stack: Kernel -> User
-  #pop rsp
+  pop rsp
   
   ret
