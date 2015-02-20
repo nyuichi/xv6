@@ -75,12 +75,6 @@ found:
   return p;
 }
 
-char*
-getkstack(void)
-{
-  return proc->kstack;
-}
-
 //PAGEBREAK: 32
 // Set up first user process.
 void

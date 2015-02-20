@@ -6,14 +6,22 @@ alltraps:
   # stack: User -> Kernel
   push rsp
   push r1
-  mov r1, proc
-  mov r1, [r1]
-  bz  r1, alltraps_trapframe
+  push r2
+  mov  r1, kpgdir
+  mov  r1, [r1]
+  mov  r2, KERNBASE
+  sub  r1, r1, r2
+  mov  r2, P2V_WO(PDEADDR)
+  mov  r2, [r2]
+  cmpeq r1, r1, r2
+  bnz   r1, alltraps_trapframe
 alltraps_stackchange:
+  mov  r1, proc
   mov  r1, [r1+8]
   mov  rsp, r1
 alltraps_trapframe:
   pop  r1
+  pop  r2
   # Build trap frame.
   push r1
   push r2
