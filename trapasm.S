@@ -20,8 +20,8 @@ alltraps_stackchange:
   mov  r1, [r1+8]
   mov  rsp, r1
 alltraps_trapframe:
-  pop  r1
   pop  r2
+  pop  r1
   # Build trap frame.
   push r1
   push r2
@@ -72,7 +72,6 @@ alltraps_trapframe:
 trapret:
   pop r1   # trapno
   pop r28  # return pop
-  add r28, r28, 4 # ok?
 
   pop r31 
   pop r30 
@@ -109,5 +108,5 @@ trapret:
 
   # stack: Kernel -> User
   pop rsp
-  
+
   ret

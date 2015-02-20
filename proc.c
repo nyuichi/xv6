@@ -95,7 +95,7 @@ userinit(void)
   memset(p->tf, 0, sizeof(*p->tf));
 
   p->tf->r30     = PGSIZE;
-  p->tf->retaddr = 0; // -4 ?
+  p->tf->retaddr = 0;
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
   p->cwd = namei("/");
