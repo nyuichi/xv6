@@ -35,8 +35,8 @@ ideintr(void)
 // Else if B_VALID is not set, read buf from disk, set B_VALID.
 void
 iderw(struct buf *b)
-{/*
-  uchar *p;
+{
+  uint p;
 
   if(!(b->flags & B_BUSY))
     panic("iderw: buf not busy");
@@ -47,13 +47,12 @@ iderw(struct buf *b)
   if(b->sector >= disksize)
     panic("iderw: sector out of range");
 
-  p = memdisk + b->sector*512;
+  p = ((uint)memdisk) + b->sector*512;
 
   if(b->flags & B_DIRTY){
     b->flags &= ~B_DIRTY;
-    memmove(p, b->data, 512);
+    memmove((char*)p, b->data, 512);
   } else
-    memmove(b->data, p, 512);
+    memmove(b->data, (char*)p, 512);
   b->flags |= B_VALID;
-  */
 }

@@ -40,8 +40,8 @@ xshort(ushort x)
 {
   ushort y;
   uchar *a = (uchar*)&y;
-  a[0] = x;
-  a[1] = x >> 8;
+  a[1] = x;
+  a[0] = x >> 8;
   return y;
 }
 
@@ -50,10 +50,10 @@ xint(uint x)
 {
   uint y;
   uchar *a = (uchar*)&y;
-  a[0] = x;
-  a[1] = x >> 8;
-  a[2] = x >> 16;
-  a[3] = x >> 24;
+  a[3] = x;
+  a[2] = x >> 8;
+  a[1] = x >> 16;
+  a[0] = x >> 24;
   return y;
 }
 
