@@ -177,22 +177,22 @@ rcr2(void)
 }
 
 static inline void
-lcr3(uint val)
+setpde(uint val)
 {
-  //asm volatile("movl %0,%%cr3" : : "r" (val));
+  *(int*)P2V(PDEADDR) = val;
 }
 
 // read trap no
 static inline uint
 readtrapno()
 {
-  return inb(0x210C);
+  return *(int*)P2V(CAUSE);
 }
 // read trap return address
 static inline uint 
 readtreturn()
 {
-  return inb(0x2108);
+  return *(int*)P2V(EPC);
 }
 
 //PAGEBREAK: 36

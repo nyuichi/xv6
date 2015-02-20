@@ -42,7 +42,7 @@ endif
 
 CFLAGS = -I.
 ASFLAGS = -s -Wno-unused-label -c
-SIMFLAGS = -no-interrupt -stat
+SIMFLAGS = -stat
 VPATH = lib:usr
 
 xv6.img: kernelmemfs

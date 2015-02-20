@@ -97,7 +97,6 @@ int             pipewrite(struct pipe*, char*, int);
 
 //PAGEBREAK: 16
 // proc.c
-char* getkstack(void);
 struct proc*    copyproc(struct proc*);
 void            exit(void);
 int             fork(void);

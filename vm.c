@@ -11,7 +11,6 @@ extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()
 //struct segdesc gdt[NSEGS];
 
-
 // Return the address of the PTE in page table pgdir
 // that corresponds to virtual address va.  If alloc!=0,
 // create any required page table pages.
@@ -130,7 +129,7 @@ kvmalloc(void)
 void
 switchkvm(void)
 {
-  *(int*)P2V(PDEADDR) = v2p(kpgdir);   // switch to the kernel page table
+  setpde(v2p(kpgdir));   // switch to the kernel page table
 }
 
 // Switch TSS and h/w page table to correspond to process p.
@@ -145,7 +144,7 @@ switchuvm(struct proc *p)
   ltr(SEG_TSS << 3);
   if(p->pgdir == 0)
     panic("switchuvm: no pgdir");
-  lcr3(v2p(p->pgdir));  // switch to new address space
+  setpde(v2p(p->pgdir));  // switch to new address space
   popcli();
 }
 

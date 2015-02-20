@@ -1,4 +1,5 @@
 #include "mmu.h"
+#include "memlayout.h"
 
 .global alltraps
 alltraps:
@@ -6,12 +7,21 @@ alltraps:
   push rsp
   push r1
   push r2
-  mov  r2, getkstack
-  call r2
-  pop  r2
+  mov  r1, kpgdir
+  mov  r1, [r1]
+  mov  r2, KERNBASE
+  sub  r1, r1, r2
+  mov  r2, P2V_WO(PDEADDR)
+  mov  r2, [r2]
+  cmpeq r1, r1, r2
+  bnz   r1, alltraps_trapframe
+alltraps_stackchange:
+  mov  r1, proc
+  mov  r1, [r1+8]
   mov  rsp, r1
+alltraps_trapframe:
+  pop  r2
   pop  r1
-
   # Build trap frame.
   push r1
   push r2
@@ -46,19 +56,22 @@ alltraps:
   push r31
 
   # Set in trap
+  push r1  # dummy for return addr
   push r1  # dummy for trapno
-  push r1  # dummy for return address
 
-  # Call trap(tf), where tf=%esp
-  push rsp
-  call trap
+  # Call trap(tf), where tf=%rsp
+  mov r1, rsp
+  sub rsp, rsp, 4
+  mov [rsp], r1
+  mov  r1, trap
+  call r1
   add rsp, rsp, 4
 
   # Return falls through to trapret...
 .global trapret
 trapret:
-  pop r28 # rsp   pop
-  pop r1  # dummy pop
+  pop r1   # trapno
+  pop r28  # return pop
 
   pop r31 
   pop r30 
@@ -95,5 +108,5 @@ trapret:
 
   # stack: Kernel -> User
   pop rsp
-  
+
   ret
