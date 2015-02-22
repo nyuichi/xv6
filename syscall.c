@@ -130,6 +130,7 @@ void
 syscall(void)
 {
   int num;
+  cprintf("syscall called\n");
   num = proc->tf->r1;
   proc->tf->r1 = callsys(num);
   if(proc->tf->r1 < 0){

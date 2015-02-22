@@ -6,13 +6,11 @@
 #include "proc.h"
 #include "gaia.h"
 
-//static void startothers(void);
 static void mpmain(void);
 extern pde_t *kpgdir;
 
 extern char __UCC_HEAP_START;
 char *end;
-//extern char end[]; // first address after kernel loaded from ELF file
 
 void init_global_var();
 

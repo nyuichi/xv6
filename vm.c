@@ -139,9 +139,9 @@ switchuvm(struct proc *p)
   pushcli();
   //cpu->gdt[SEG_TSS] = SEG16(STS_T32A, &cpu->ts, sizeof(cpu->ts)-1, 0);
   //cpu->gdt[SEG_TSS].s = 0;
-  cpu->ts.ss0 = SEG_KDATA << 3;
-  cpu->ts.esp0 = (uint)proc->kstack + KSTACKSIZE;
-  ltr(SEG_TSS << 3);
+  //cpu->ts.ss0 = SEG_KDATA << 3;
+  //cpu->ts.esp0 = (uint)proc->kstack + KSTACKSIZE;
+  //ltr(SEG_TSS << 3);
   if(p->pgdir == 0)
     panic("switchuvm: no pgdir");
   setpde(v2p(p->pgdir));  // switch to new address space
