@@ -56,7 +56,7 @@ bootblock: bootasm.S bootmain.c
 
 initcode: initcode.S
 	$(NATIVECC) -E -o _initcode.s $<
-	$(AS) -Wno-unused-label _initcode.s -r -e 0 -o initcode
+	$(AS) -c -Wno-unused-label _initcode.s -r -e 0 -o initcode
 
 kernel: $(ASMS) initcode 
 	./tools/gen_binary_blobs 0 initcode

@@ -1,12 +1,19 @@
+#ifndef __ASSEMBLER__
 #include "ucc.h"
 #include "memlayout.h"
+#endif
 
+#define PL_USER 3
+#define PL_KERN 0
+
+#ifndef __ASSEMBLER__
 // copy
 // Routines to let C code use special GAIA instructions.
 static inline uchar
 inb(ushort port)
 {
   __asm("\
+      halt\n\
       mov r2, [rbp+4] \n\
       ld  r1, r2, 0   \n\
       ret             \n\
@@ -17,6 +24,7 @@ static inline void
 insl(int port, void *addr, int cnt)
 {
   __asm("\
+      halt\n\
       mov r1, [rbp+4]     \n\
       mov r2, [rbp+8]     \n\
       mov r3, [rbp+12]    \n\
@@ -37,6 +45,7 @@ static inline void
 outb(ushort port, uchar data)
 {
   __asm("\
+      halt\n\
       mov r1, [rbp+4]   \n\
       mov r2, [rbp+8]   \n\
       st  r2, r1, 0     \n\
@@ -48,6 +57,7 @@ static inline void
 outw(ushort port, ushort data)
 {
   __asm("\
+      halt\n\
       mov r1, [rbp+4]   \n\
       mov r2, [rbp+8]   \n\
       st  r2, r1, 0     \n\
@@ -59,6 +69,7 @@ static inline void
 outsl(int port, const void *addr, int cnt)
 {
   __asm("\
+      halt\n\
       mov r1, [rbp+4]       \n\
       mov r2, [rbp+8]       \n\
       mov r3, [rbp+12]      \n\
@@ -192,13 +203,14 @@ readtrapno()
 static inline uint 
 readtreturn()
 {
-  return *(int*)P2V(EPC);
+  return *(int*)P2V(EPC) - 4;
 }
 
 //PAGEBREAK: 36
 // Layout of the trap frame built on the stack by the
 // hardware and by trapasm.S, and passed to trap().
 struct trapframe {
+  uint privilege;
   // trapno: set in trap.c
   uint trapno;
   uint retaddr;
@@ -236,3 +248,4 @@ struct trapframe {
   uint r2;
   uint r1;
 };
+#endif

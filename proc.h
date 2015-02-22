@@ -3,9 +3,9 @@
 
 // Per-CPU state
 struct cpu {
+  int privilege;               // Make up for GAIA's lack of privilege control.
   uchar id;                    // Local APIC ID; index into cpus[] below
   struct context *scheduler;   // swtch() here to enter scheduler
-  struct taskstate ts;         // Used by x86 to find stack for interrupt
   volatile uint started;       // Has the CPU started?
   int ncli;                    // Depth of pushcli nesting.
   int intena;                  // Were interrupts enabled before pushcli?
@@ -45,7 +45,6 @@ struct context {
   uint r28;
   uint r29;
   uint rbp;
-  uint rsp;
 };
 
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };

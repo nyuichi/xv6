@@ -34,9 +34,11 @@ void
 trap(struct trapframe *tf)
 {
   tf->trapno = readtrapno();
-  tf->retaddr= readtreturn();
+  tf->retaddr = readtreturn();
 
+  cprintf("trap called. tf->retaddr:0x%x\n", tf->retaddr);
   if(tf->trapno == T_SYSCALL){
+    cprintf("syscall interrupt.\n");
     if(proc->killed)
       exit();
     proc->tf = tf;
@@ -48,6 +50,7 @@ trap(struct trapframe *tf)
 
   switch(tf->trapno){
   case T_IRQ0 + IRQ_TIMER:
+    cprintf("timer interrupt\n");
     if(cpu->id == 0){
       acquire(&tickslock);
       ticks++;
@@ -65,6 +68,7 @@ trap(struct trapframe *tf)
     //kbdintr();
     break;
   case T_IRQ0 + IRQ_COM1:
+    cprintf("serial interrupt\n");
     uartintr();
     break;
   case T_IRQ0 + 7:
@@ -97,23 +101,6 @@ trap(struct trapframe *tf)
             proc->pid, proc->name, tf->trapno);
     proc->killed = 1;
   }
-
-  /*
-  // Force process exit if it has been killed and is in user space.
-  // (If it is still executing in the kernel, let it keep running
-  // until it gets to the regular system call return.)
-  if(proc && proc->killed && (tf->cs&3) == DPL_USER)
-    exit();
-
-  // Force process to give up CPU on clock tick.
-  // If interrupts were on while locks held, would need to check nlock.
-  if(proc && proc->state == RUNNING && tf->trapno == T_IRQ0+IRQ_TIMER)
-    yield();
-
-  // Check if the process has been killed since we yielded
-  if(proc && proc->killed && (tf->cs&3) == DPL_USER)
-    exit();
-  */
 
   // Force process exit if it has been killed and is in user space.
   // (If it is still executing in the kernel, let it keep running

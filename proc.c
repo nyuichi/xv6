@@ -67,6 +67,7 @@ found:
    * instead, we set return address in forkret by inline assembly
   */
 
+  cprintf("trapframe address:0x%x\n", p->tf);
   sp -= sizeof *p->context;
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
@@ -92,7 +93,7 @@ userinit(void)
   inituvm(p->pgdir, _binary_initcode_start, (int)_binary_initcode_size);
   p->sz = PGSIZE;
   memset(p->tf, 0, sizeof(*p->tf));
-
+  p->tf->privilege = PL_USER;
   p->tf->r30     = PGSIZE;
   p->tf->retaddr = 0;
 
@@ -286,8 +287,11 @@ scheduler(void)
       // before jumping back to us.
       proc = p;
       switchuvm(p);
+      cprintf("switchuvm end. proc:0x%x\n", proc);
       p->state = RUNNING;
+      cprintf("swtch start. proc:0x%x\n", proc);
       swtch(&cpu->scheduler, proc->context);
+      cprintf("swtch end. proc:0x%x\n", proc);
       switchkvm();
 
       // Process is done running for now.
@@ -324,9 +328,11 @@ void
 yield(void)
 {
   acquire(&ptable.lock);  //DOC: yieldlock
+  cprintf("yield start\n");
   proc->state = RUNNABLE;
   sched();
   release(&ptable.lock);
+  cprintf("yield end\n");
 }
 
 // A fork child's very first scheduling by scheduler()
@@ -335,6 +341,7 @@ void
 forkret(void)
 {
   static int first = 1;
+  cprintf("forkret start\n");
   // Still holding ptable.lock from scheduler.
   release(&ptable.lock);
 
@@ -346,10 +353,14 @@ forkret(void)
     initlog();
   }
 
-  cprintf("forkret\n");
 
+  cprintf("forkret end\n");
   // Return to "caller", actually trapret (see allocproc).
+  // Because trapret is not actually caller, it does not add 4 to rsp after
+  // we "return" to it, unlike regular function calls.
+  // So we have to do it here instead.
   __asm("\
+      add rsp, rsp, 4   \n\
       mov r28, trapret  \n\
       ret               \n\
   ");
@@ -400,9 +411,12 @@ wakeup1(void *chan)
 {
   struct proc *p;
 
+  cprintf("wakeup1\n");
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-    if(p->state == SLEEPING && p->chan == chan)
+    if(p->state == SLEEPING && p->chan == chan) {
+      cprintf("process(%d) is waked up.\n", p->pid);
       p->state = RUNNABLE;
+    }
 }
 
 // Wake up all processes sleeping on chan.

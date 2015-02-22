@@ -398,21 +398,30 @@ sys_exec(void)
   int i;
   uint uargv, uarg;
 
+  cprintf("sysexec called\n");
   if(argstr(0, &path) < 0 || argint(1, (int*)&uargv) < 0){
+    cprintf("sys_exec error1\n");
     return -1;
   }
+  cprintf("sys_exec, path:%s, uargv:%d\n", path, uargv);
   memset(argv, 0, sizeof(argv));
   for(i=0;; i++){
-    if(i >= NELEM(argv))
+    if(i >= NELEM(argv)) {
+      cprintf("sys_exec error2\n");
       return -1;
-    if(fetchint(uargv+4*i, (int*)&uarg) < 0)
+    }
+    if(fetchint(uargv+4*i, (int*)&uarg) < 0) {
+      cprintf("sys_exec error3\n");
       return -1;
+    }
     if(uarg == 0){
       argv[i] = 0;
       break;
     }
-    if(fetchstr(uarg, &argv[i]) < 0)
+    if(fetchstr(uarg, &argv[i]) < 0) {
+      cprintf("sys_exec error4\n");
       return -1;
+    }
   }
   return exec(path, argv);
 }

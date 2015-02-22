@@ -18,6 +18,7 @@ exec(char *path, char **argv)
   struct proghdr ph;
   pde_t *pgdir, *oldpgdir;
 
+  cprintf("exec called\n");
   begin_op();
   if((ip = namei(path)) == 0){
     end_op();
