@@ -399,6 +399,7 @@ sys_exec(void)
   uint uargv, uarg;
 
   cprintf("sysexec called\n");
+  cprintf("path addr:0x%x\n", (uint)&path);
   if(argstr(0, &path) < 0 || argint(1, (int*)&uargv) < 0){
     cprintf("sys_exec error1\n");
     return -1;

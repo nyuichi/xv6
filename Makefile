@@ -41,7 +41,7 @@ else
 endif
 
 CFLAGS = -I.
-ASFLAGS = -s -Wno-unused-label -c
+ASFLAGS = -v -Wno-unused-label -c
 SIMFLAGS = -stat
 VPATH = lib:usr
 
@@ -147,7 +147,7 @@ clean:
 	usr/*.o usr/*.d usr/*.sym usr/*.asm usr/_*.s
 
 sim: xv6.img
-	$(SIM) $(SIMFLAGS) xv6.img
+	$(SIM) $(SIMFLAGS) xv6.img -debug
 
 sim-meta-gdb: xv6.img
 	gdb -tui --args $(SIM) $(SIMFLAGS) xv6.img

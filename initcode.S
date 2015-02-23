@@ -13,8 +13,12 @@ _start:
 
 init:
   #.string "/init\0"
-  .int 0x2f696e69
-  .int 0x74000000
+  .int 0x0000002f
+  .int 0x00000069
+  .int 0x0000006e
+  .int 0x00000069
+  .int 0x00000074
+  .int 0x00000000
 
 # char *argv[] = { init, 0 };
 .align 4
@@ -26,8 +30,8 @@ start:
   mov r1, P2V_WO(SERIAL)
   mov [r1], 0x49  // print out 'I' to tell that we are here
   add rsp, rsp, -12
-  mov [rsp-8], argv
-  mov [rsp-4], init
+  mov [rsp+8], argv
+  mov [rsp+4], init
   mov [rsp], 0  //dummy rbp
   mov r1, SYS_exec
   sysenter
