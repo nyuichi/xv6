@@ -77,9 +77,9 @@ kernel: $(ASMS) initcode
 MEMFSASMS = $(filter-out _ide.s,$(ASMS)) _memide.s
 kernelmemfs: $(MEMFSASMS) initcode fs.img
 	./tools/gen_binary_blobs 0 initcode fs.img
-	$(AS) $(ASFLAGS) -o _kernelmemfs -e 0x80003000 -start _start $(MEMFSASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
-	./tools/gen_binary_blobs `ruby -e "print open('_kernelmemfs').size + 0x80003000"` initcode fs.img
-	$(AS) $(ASFLAGS) -o _kernelmemfs -e 0x80003000 -start _start $(MEMFSASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
+	$(AS) $(ASFLAGS) -o _kernelmemfs -e 0x80002000 -start _start $(MEMFSASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
+	./tools/gen_binary_blobs `ruby -e "print open('_kernelmemfs').size + 0x80002000"` initcode fs.img
+	$(AS) $(ASFLAGS) -o _kernelmemfs -e 0x80002000 -start _start $(MEMFSASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
 	cat _kernelmemfs initcode fs.img > kernelmemfs
 	rm _kernelmemfs
 	./tools/attach_boot_header kernelmemfs

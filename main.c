@@ -20,10 +20,12 @@ void init_global_var();
 int
 main(void)
 {
+  __asm("break 2\n");
   init_global_var();
 
   // virtual addr is not yet implemented?
   uartinit();      // early uartinit to enbale cprintf for debug purpose
+  cprintf("kinit1 start\n");
   kinit1(end, P2V(512*1024)); // phys page allocator
   kvmalloc();      // kernel page table
   mpinit();       // collect info about this machine

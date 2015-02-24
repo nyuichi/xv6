@@ -9,7 +9,7 @@
 
 .global swtch
 swtch:
-  mov r1, P2V_WO(SERIAL)
+  mov r1, SERIAL
   mov [r1], 0x53  // print out 'S' to tell that we are here
   # Stash args
   mov r1, [rbp+4]

@@ -1,6 +1,6 @@
 // Memory layout
 
-#define EXTMEM   0x3000             // Start of extended memory
+#define EXTMEM   0x2000             // Start of extended memory
 #define PHYSTOP  (4*1024*1024)      // Top physical memory
 #define DEVSPACE 0xFE000000         // Other devices are at high addresses
 
@@ -8,14 +8,15 @@
 #define KERNBASE 0x80000000         // First kernel virtual address
 #define KERNLINK (KERNBASE+EXTMEM)  // Address where kernel is linked
 
-//
-#define VAENABLE   0x2200
-#define PDEADDR    0x2204
-#define INTHANDLER 0x2100
-#define INTENABLE  0x2104
-#define EPC        0x2108
-#define CAUSE      0x210C
-#define SERIAL     0x2000
+// [0x80000000, 0x80002FFF] is special memory mapped area.
+// Access to these area is not tlanslated by MMU and always available.
+#define VAENABLE   0x80001200
+#define PDADDR     0x80001204
+#define INTHANDLER 0x80001100
+#define INTENABLE  0x80001104
+#define EPC        0x80001108
+#define CAUSE      0x8000110C
+#define SERIAL     0x80001000
 
 #ifndef __ASSEMBLER__
 #ifndef V2P_P2V

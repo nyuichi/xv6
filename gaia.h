@@ -148,20 +148,20 @@ loadgs(ushort v)
 static inline void
 cli(void)
 {
-  *(int*)P2V(INTENABLE) = 0;
+  *(int*)INTENABLE = 0;
 }
 
 static inline void
 sti(void)
 {
-  *(int*)P2V(INTENABLE) = 1;
+  *(int*)INTENABLE = 1;
 }
 
 // read interrupt flag
 static inline uchar
 readiflg(void)
 {
-  return *(int*)P2V(INTENABLE);
+  return *(int*)INTENABLE;
 }
 
 static inline uint
@@ -190,20 +190,20 @@ rcr2(void)
 static inline void
 setpde(uint val)
 {
-  *(int*)P2V(PDEADDR) = val;
+  *(int*)PDADDR = val;
 }
 
 // read trap no
 static inline uint
 readtrapno()
 {
-  return *(int*)P2V(CAUSE);
+  return *(int*)CAUSE;
 }
 // read trap return address
 static inline uint 
 readtreturn()
 {
-  return *(int*)P2V(EPC) - 4;
+  return *(int*)EPC - 4; // GAIA stores interrupted address + 4.
 }
 
 //PAGEBREAK: 36
