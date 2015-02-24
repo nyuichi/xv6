@@ -20,7 +20,6 @@ void init_global_var();
 int
 main(void)
 {
-  __asm("break 2\n");
   init_global_var();
 
   // virtual addr is not yet implemented?

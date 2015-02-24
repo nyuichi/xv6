@@ -92,7 +92,7 @@ static struct kmap {
   uint phys_end;
   int perm;
 } kmap[] = {
- { (void*)KERNBASE, 0,             EXTMEM,    PTE_W}, // I/O space
+ { (void*)KERNBASE, KERNBASE,      KERNBASE+EXTMEM,    PTE_W}, // I/O space
  { (void*)KERNLINK, V2P(KERNLINK), PHYSTOP,   PTE_W}  //kern text+rodata+data +memory
 };
 
