@@ -24,6 +24,7 @@ main(void)
 
   // virtual addr is not yet implemented?
   uartinit();      // early uartinit to enbale cprintf for debug purpose
+  cprintf("kinit1 start\n");
   kinit1(end, P2V(512*1024)); // phys page allocator
   kvmalloc();      // kernel page table
   mpinit();       // collect info about this machine

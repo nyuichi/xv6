@@ -11,8 +11,10 @@ entry:
   mov r1, V2P_WO(set_entrypgdir)
   call r1
 
-  mov [PDEADDR], V2P_WO(entrypgdir)
-  mov [VAENABLE], 1
+  mov r1, PDADDR
+  mov [r1], V2P_WO(entrypgdir)
+  mov r1, VAENABLE
+  mov [r1], 1
   mov rsp, stack + KSTACKSIZE
   mov r1, main
   jr r1
