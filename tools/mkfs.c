@@ -92,7 +92,7 @@ main(int argc, char *argv[])
   usedblocks = ninodes / IPB + 3 + bitblocks;
   freeblock = usedblocks;
 
-  printf("used %d (bit %d ninode %zu) free %u log %u total %d\n", usedblocks,
+  printf("used %d (bit %d ninode %u) free %u log %u total %d\n", usedblocks,
          bitblocks, ninodes/IPB + 1, freeblock, nlog, nblocks+usedblocks+nlog);
 
   assert(nblocks + usedblocks + nlog == size);
@@ -124,7 +124,7 @@ main(int argc, char *argv[])
       perror(argv[i]);
       exit(1);
     }
-    
+
     // Skip leading _ in name when writing to file system.
     // The binaries are named _rm, _cat, etc. to keep the
     // build operating system from trying to execute them
@@ -242,7 +242,7 @@ balloc(int used)
   for(i = 0; i < used; i++){
     buf[i/8] = buf[i/8] | (0x1 << (i%8));
   }
-  printf("balloc: write bitmap block at sector %zu\n", ninodes/IPB + 3);
+  printf("balloc: write bitmap block at sector %u\n", ninodes/IPB + 3);
   wsect(ninodes / IPB + 3, buf);
 }
 

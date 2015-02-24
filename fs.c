@@ -22,6 +22,8 @@
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 static void itrunc(struct inode*);
+void xdip2gaia(void*, struct dinode*);
+void gdip2x86(struct dinode*, void*);
 
 // Read the super block.
 void
@@ -179,15 +181,18 @@ ialloc(uint dev, short type)
   struct buf *bp;
   struct dinode *dip;
   struct superblock sb;
+  struct dinode gdip;
 
   readsb(dev, &sb);
 
   for(inum = 1; inum < sb.ninodes; inum++){
     bp = bread(dev, IBLOCK(inum));
-    dip = (struct dinode*)bp->data + inum%IPB;
-    if(dip->type == 0){  // a free inode
-      memset(dip, 0, sizeof(*dip));
-      dip->type = type;
+    dip = (struct dinode*)((uint)bp->data + (inum%IPB)*XDINSIZE);
+    xdip2gaia(dip, &gdip);
+    if(gdip.type == 0){  // a free inode
+      memset(&gdip, 0, sizeof(gdip));
+      gdip.type = type;
+      gdip2x86(&gdip, dip);
       log_write(bp);   // mark it allocated on the disk
       brelse(bp);
       return iget(dev, inum);
@@ -203,15 +208,18 @@ iupdate(struct inode *ip)
 {
   struct buf *bp;
   struct dinode *dip;
+  struct dinode gdip;
 
   bp = bread(ip->dev, IBLOCK(ip->inum));
-  dip = (struct dinode*)bp->data + ip->inum%IPB;
-  dip->type = ip->type;
-  dip->major = ip->major;
-  dip->minor = ip->minor;
-  dip->nlink = ip->nlink;
-  dip->size = ip->size;
-  memmove(dip->addrs, ip->addrs, sizeof(ip->addrs));
+  dip = (struct dinode*)((uint)bp->data + (ip->inum%IPB)*XDINSIZE);
+  xdip2gaia(dip, &gdip);
+  gdip.type = ip->type;
+  gdip.major = ip->major;
+  gdip.minor = ip->minor;
+  gdip.nlink = ip->nlink;
+  gdip.size = ip->size;
+  memmove(gdip.addrs, ip->addrs, sizeof(ip->addrs));
+  gdip2x86(&gdip, dip);
   log_write(bp);
   brelse(bp);
 }
@@ -270,6 +278,7 @@ ilock(struct inode *ip)
 {
   struct buf *bp;
   struct dinode *dip;
+  struct dinode gdip;
 
   if(ip == 0 || ip->ref < 1)
     panic("ilock");
@@ -282,13 +291,15 @@ ilock(struct inode *ip)
 
   if(!(ip->flags & I_VALID)){
     bp = bread(ip->dev, IBLOCK(ip->inum));
-    dip = (struct dinode*)bp->data + ip->inum%IPB;
-    ip->type = dip->type;
-    ip->major = dip->major;
-    ip->minor = dip->minor;
-    ip->nlink = dip->nlink;
-    ip->size = dip->size;
-    memmove(ip->addrs, dip->addrs, sizeof(ip->addrs));
+    dip = (struct dinode*)((uint)bp->data + (ip->inum%IPB)*XDINSIZE);
+    xdip2gaia(dip, &gdip);
+    ip->type  = gdip.type;
+    ip->major = gdip.major;
+    ip->minor = gdip.minor;
+    ip->nlink = gdip.nlink;
+    ip->size  = gdip.size;
+    memmove(ip->addrs, gdip.addrs, sizeof(ip->addrs));
+    gdip2x86(&gdip, dip);
     brelse(bp);
     ip->flags |= I_VALID;
     if(ip->type == 0)
@@ -616,6 +627,7 @@ namex(char *path, int nameiparent, char *name)
 
   while((path = skipelem(path, name)) != 0){
     ilock(ip);
+    cprintf("hoge\n");
     if(ip->type != T_DIR){
       iunlockput(ip);
       return 0;
@@ -652,13 +664,26 @@ nameiparent(char *path, char *name)
   return namex(path, 1, name);
 }
 
-void
-din2gaia(void* xdin, struct dinode* gdin){
-  gdin->type  = *((short*)xdin);
-  gdin->major = *((short*)((uint)xdin +2));
-  gdin->minor = *((short*)((uint)xdin +4));
-  gdin->nlink = *((short*)((uint)xdin +6));
 
-  gdin->size  = *((uint*)((uint)xdin +8));
-  memmove((uint*)((uint)xdin +12), gdin->addrs, sizeof(uint)*(NDIRECT + 1));
+
+void
+xdip2gaia(void* xdin, struct dinode* gdin){
+  uint tmp = *((uint*)xdin);
+  gdin->type  = tmp >> 16;
+  gdin->major = tmp & 0x0000ffff;
+  tmp = *((uint*)((uint)xdin + 4));
+  gdin->minor = tmp >> 16;
+  gdin->nlink = tmp & 0x0000ffff;
+
+  gdin->size  = *((uint*)((uint)xdin + 8));
+  memmove(gdin->addrs, (uint*)((uint)xdin + 12), sizeof(uint)*(NDIRECT+1));
+}
+
+void
+gdip2x86(struct dinode* gdin, void* xdin){
+  *((uint*)xdin)             = (gdin->type  << 16) | (gdin->major);
+  *((uint*)((uint)xdin + 4)) = (gdin->minor << 16) | (gdin->nlink);
+
+  *((uint*)((uint)xdin + 8)) = gdin->size;
+  memmove((uint*)((uint)xdin + 12), gdin->addrs, sizeof(uint)*(NDIRECT+1));
 }

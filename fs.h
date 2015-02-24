@@ -1,4 +1,4 @@
-// On-disk file system format. 
+// On-disk file system format.
 // Both the kernel and user programs use this header file.
 
 // Block 0 is unused.
@@ -33,8 +33,10 @@ struct dinode {
   uint addrs[NDIRECT+1];   // Data block addresses
 };
 
+#define XDINSIZE      (12 + 4*(NDIRECT+1))
+
 // Inodes per block.
-#define IPB           (BSIZE / sizeof(struct dinode))
+#define IPB           (BSIZE / XDINSIZE)
 
 // Block containing inode i
 #define IBLOCK(i)     ((i) / IPB + 2)
@@ -52,4 +54,3 @@ struct dirent {
   ushort inum;
   char name[DIRSIZ];
 };
-

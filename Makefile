@@ -58,7 +58,7 @@ initcode: initcode.S
 	$(NATIVECC) -E -o _initcode.s $<
 	$(AS) -c -Wno-unused-label _initcode.s -r -e 0 -o initcode
 
-kernel: $(ASMS) initcode 
+kernel: $(ASMS) initcode
 	./tools/gen_binary_blobs 0 initcode
 	$(AS) $(ASFLAGS) -o _kernel -e 0x80003000 -start _start $(ASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
 	./tools/gen_binary_blobs `ruby -e "print open('_kernel').size + 0x80003000"` initcode
@@ -136,7 +136,7 @@ fs.img: mkfs README $(UPROGS)
 
 -include *.d
 
-clean: 
+clean:
 	rm -f *.tex *.dvi *.idx *.aux *.log *.ind *.ilg \
 	*.o *.d *.asm *.sym vectors.S bootblock \
 	initcode initcode.out kernel xv6.img fs.img kernelmemfs mkfs \
