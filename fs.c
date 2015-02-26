@@ -627,7 +627,6 @@ namex(char *path, int nameiparent, char *name)
 
   while((path = skipelem(path, name)) != 0){
     ilock(ip);
-    cprintf("hoge\n");
     if(ip->type != T_DIR){
       iunlockput(ip);
       return 0;
@@ -668,12 +667,19 @@ nameiparent(char *path, char *name)
 
 void
 xdip2gaia(void* xdin, struct dinode* gdin){
-  uint tmp = *((uint*)xdin);
-  gdin->type  = tmp >> 16;
-  gdin->major = tmp & 0x0000ffff;
-  tmp = *((uint*)((uint)xdin + 4));
-  gdin->minor = tmp >> 16;
-  gdin->nlink = tmp & 0x0000ffff;
+  char c1,c2;
+  c1 = *((char*)xdin);
+  c2 = *((char*)xdin+1);
+  gdin->type  = ((short)c1) + (((short)c2)<<8); // little endian
+  c1 = *((char*)xdin+2);
+  c2 = *((char*)xdin+3);
+  gdin->major = ((short)c1) + (((short)c2)<<8);
+  c1 = *((char*)xdin+4);
+  c2 = *((char*)xdin+5);
+  gdin->minor = ((short)c1) + (((short)c2)<<8);
+  c1 = *((char*)xdin+6);
+  c2 = *((char*)xdin+7);
+  gdin->nlink = ((short)c1) + (((short)c2)<<8);
 
   gdin->size  = *((uint*)((uint)xdin + 8));
   memmove(gdin->addrs, (uint*)((uint)xdin + 12), sizeof(uint)*(NDIRECT+1));
@@ -681,8 +687,8 @@ xdip2gaia(void* xdin, struct dinode* gdin){
 
 void
 gdip2x86(struct dinode* gdin, void* xdin){
-  *((uint*)xdin)             = (gdin->type  << 16) | (gdin->major);
-  *((uint*)((uint)xdin + 4)) = (gdin->minor << 16) | (gdin->nlink);
+  *((uint*)xdin)             = (gdin->type)  | (gdin->major << 16);
+  *((uint*)((uint)xdin + 4)) = (gdin->minor) | (gdin->nlink << 16);
 
   *((uint*)((uint)xdin + 8)) = gdin->size;
   memmove((uint*)((uint)xdin + 12), gdin->addrs, sizeof(uint)*(NDIRECT+1));
