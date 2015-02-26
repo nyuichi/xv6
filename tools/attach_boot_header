@@ -13,7 +13,7 @@ end
 def attach_exec_header(filename)
   result = Tempfile.new(filename)
   open(filename, 'rb') do |f|
-    header = [f.size].pack("l>")  # header is just a 4 byte filesize integer with big endian
+    header = [f.size].pack("l")  # header is just a 4 byte filesize integer with big endian
     result.write(header)
     result.write(f.read)
   end

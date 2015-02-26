@@ -74,6 +74,7 @@ argstr(int n, char **pp)
   int addr;
   if(argint(n, &addr) < 0)
     return -1;
+  cprintf("argstr, addr:0x%x", addr);
   return fetchstr(addr, pp);
 }
 

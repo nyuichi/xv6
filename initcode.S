@@ -12,13 +12,7 @@ _start:
 # char init[] = "/init\0";
 
 init:
-  #.string "/init\0"
-  .int 0x0000002f
-  .int 0x00000069
-  .int 0x0000006e
-  .int 0x00000069
-  .int 0x00000074
-  .int 0x00000000
+  .string "/init\0"
 
 # char *argv[] = { init, 0 };
 .align 4
