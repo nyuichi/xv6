@@ -54,3 +54,5 @@ struct dirent {
   ushort inum;
   char name[DIRSIZ];
 };
+
+#define XDIRSIZE      (2 + (DIRSIZ))

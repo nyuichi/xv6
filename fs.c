@@ -19,11 +19,14 @@
 #include "buf.h"
 #include "fs.h"
 #include "file.h"
+#include "assert.h"
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 static void itrunc(struct inode*);
-void xdip2gaia(void*, struct dinode*);
-void gdip2x86(struct dinode*, void*);
+void xdip2gaia(char*, struct dinode*);
+void gdip2x86(struct dinode*, char*);
+void xdirent2gaia(char*, struct dirent*);
+void gdirent2x86(struct dirent*, char*);
 
 // Read the super block.
 void
@@ -188,11 +191,11 @@ ialloc(uint dev, short type)
   for(inum = 1; inum < sb.ninodes; inum++){
     bp = bread(dev, IBLOCK(inum));
     dip = (struct dinode*)((uint)bp->data + (inum%IPB)*XDINSIZE);
-    xdip2gaia(dip, &gdip);
+    xdip2gaia((char*)dip, &gdip);
     if(gdip.type == 0){  // a free inode
       memset(&gdip, 0, sizeof(gdip));
       gdip.type = type;
-      gdip2x86(&gdip, dip);
+      gdip2x86(&gdip, (char*)dip);
       log_write(bp);   // mark it allocated on the disk
       brelse(bp);
       return iget(dev, inum);
@@ -212,14 +215,14 @@ iupdate(struct inode *ip)
 
   bp = bread(ip->dev, IBLOCK(ip->inum));
   dip = (struct dinode*)((uint)bp->data + (ip->inum%IPB)*XDINSIZE);
-  xdip2gaia(dip, &gdip);
+  xdip2gaia((char*)dip, &gdip);
   gdip.type = ip->type;
   gdip.major = ip->major;
   gdip.minor = ip->minor;
   gdip.nlink = ip->nlink;
   gdip.size = ip->size;
   memmove(gdip.addrs, ip->addrs, sizeof(ip->addrs));
-  gdip2x86(&gdip, dip);
+  gdip2x86(&gdip, (char*)dip);
   log_write(bp);
   brelse(bp);
 }
@@ -292,14 +295,14 @@ ilock(struct inode *ip)
   if(!(ip->flags & I_VALID)){
     bp = bread(ip->dev, IBLOCK(ip->inum));
     dip = (struct dinode*)((uint)bp->data + (ip->inum%IPB)*XDINSIZE);
-    xdip2gaia(dip, &gdip);
+    xdip2gaia((char*)dip, &gdip);
     ip->type  = gdip.type;
     ip->major = gdip.major;
     ip->minor = gdip.minor;
     ip->nlink = gdip.nlink;
     ip->size  = gdip.size;
     memmove(ip->addrs, gdip.addrs, sizeof(ip->addrs));
-    gdip2x86(&gdip, dip);
+    gdip2x86(&gdip, (char*)dip);
     brelse(bp);
     ip->flags |= I_VALID;
     if(ip->type == 0)
@@ -520,13 +523,15 @@ dirlookup(struct inode *dp, char *name, uint *poff)
 {
   uint off, inum;
   struct dirent de;
+  char xdir[XDIRSIZE];
 
   if(dp->type != T_DIR)
     panic("dirlookup not DIR");
 
-  for(off = 0; off < dp->size; off += sizeof(de)){
-    if(readi(dp, (char*)&de, off, sizeof(de)) != sizeof(de))
+  for(off = 0; off < dp->size; off += XDIRSIZE){
+    if(readi(dp, xdir, off, XDIRSIZE) != XDIRSIZE)
       panic("dirlink read");
+    xdirent2gaia(xdir, &de);
     if(de.inum == 0)
       continue;
     if(namecmp(name, de.name) == 0){
@@ -628,23 +633,31 @@ namex(char *path, int nameiparent, char *name)
   while((path = skipelem(path, name)) != 0){
     ilock(ip);
     if(ip->type != T_DIR){
+      cprintf("namex, error0\n");
       iunlockput(ip);
       return 0;
     }
+    cprintf("nameiparent:%d, path:%s\n", nameiparent, path);
     if(nameiparent && *path == '\0'){
+      cprintf("namex, success0\n");
       // Stop one level early.
       iunlock(ip);
       return ip;
     }
     if((next = dirlookup(ip, name, 0)) == 0){
+      cprintf("namex, error1\n");
       iunlockput(ip);
       return 0;
     }
+    cprintf("namex, iunlockput start\n");
     iunlockput(ip);
+    cprintf("namex, iunlockput end\n");
     ip = next;
   }
   if(nameiparent){
+    cprintf("namex, iput start\n");
     iput(ip);
+    cprintf("namex, iput end\n");
     return 0;
   }
   return ip;
@@ -666,30 +679,50 @@ nameiparent(char *path, char *name)
 
 
 void
-xdip2gaia(void* xdin, struct dinode* gdin){
+xdip2gaia(char* xdin, struct dinode* gdin){
   char c1,c2;
-  c1 = *((char*)xdin);
-  c2 = *((char*)xdin+1);
+  c1 = *(xdin);
+  c2 = *(xdin+1);
   gdin->type  = ((short)c1) + (((short)c2)<<8); // little endian
-  c1 = *((char*)xdin+2);
-  c2 = *((char*)xdin+3);
+  c1 = *(xdin+2);
+  c2 = *(xdin+3);
   gdin->major = ((short)c1) + (((short)c2)<<8);
-  c1 = *((char*)xdin+4);
-  c2 = *((char*)xdin+5);
+  c1 = *(xdin+4);
+  c2 = *(xdin+5);
   gdin->minor = ((short)c1) + (((short)c2)<<8);
-  c1 = *((char*)xdin+6);
-  c2 = *((char*)xdin+7);
+  c1 = *(xdin+6);
+  c2 = *(xdin+7);
   gdin->nlink = ((short)c1) + (((short)c2)<<8);
 
-  gdin->size  = *((uint*)((uint)xdin + 8));
-  memmove(gdin->addrs, (uint*)((uint)xdin + 12), sizeof(uint)*(NDIRECT+1));
+  gdin->size  = *((uint*)(xdin + 8));
+  memmove(gdin->addrs, (uint*)(xdin + 12), sizeof(uint)*(NDIRECT+1));
 }
 
 void
-gdip2x86(struct dinode* gdin, void* xdin){
-  *((uint*)xdin)             = (gdin->type)  | (gdin->major << 16);
-  *((uint*)((uint)xdin + 4)) = (gdin->minor) | (gdin->nlink << 16);
+gdip2x86(struct dinode* gdin, char* xdin){
+  *((uint*)xdin)       = (gdin->type)  | (gdin->major << 16);
+  *((uint*)(xdin + 4)) = (gdin->minor) | (gdin->nlink << 16);
 
-  *((uint*)((uint)xdin + 8)) = gdin->size;
-  memmove((uint*)((uint)xdin + 12), gdin->addrs, sizeof(uint)*(NDIRECT+1));
+  *((uint*)(xdin + 8)) = gdin->size;
+  memmove((uint*)(xdin + 12), gdin->addrs, sizeof(uint)*(NDIRECT+1));
+}
+
+void
+xdirent2gaia(char* xdir, struct dirent* gdir){
+  int i;
+  uint xdir_cont = *(uint*)xdir;
+  gdir->inum     = (ushort)(((*(uint*)xdir) & 0x0000ffff));
+
+  assert((DIRSIZ - 2) % 4 == 0);
+  memmove(gdir->name, xdir+2, DIRSIZ);
+}
+
+void
+gdirent2x86(struct dirent* gdir, char* xdir){
+  int i;
+  *(xdir) = gdir->inum & 0xff;
+  *(xdir+1) = (gdir->inum & 0xff00) >> 8;
+
+  assert((DIRSIZ - 2) % 4 == 0);
+  memmove(xdir+2, gdir->name, DIRSIZ);
 }

@@ -33,7 +33,7 @@ exec(char *path, char **argv)
   // Check ELF header
   if(readi(ip, (char*)&elf, 0, sizeof(elf)) < sizeof(elf))
     goto bad;
-  cprintf("exec, check elf magic\n");
+  cprintf("exec, check elf magic, magic: 0x%x\n", elf.magic);
   if(elf.magic != ELF_MAGIC)
     goto bad;
 
