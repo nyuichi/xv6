@@ -6,6 +6,8 @@
 #define PL_USER 3
 #define PL_KERN 0
 
+#define HEADER_SIZE 4
+
 #ifndef __ASSEMBLER__
 // copy
 // Routines to let C code use special GAIA instructions.

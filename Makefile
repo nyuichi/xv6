@@ -41,7 +41,7 @@ else
 endif
 
 CFLAGS = -I.
-ASFLAGS = -v -Wno-unused-label -c
+ASFLAGS = -v -Wno-unused-label
 SIMFLAGS = -stat
 VPATH = lib:usr
 
@@ -60,9 +60,9 @@ initcode: initcode.S
 
 kernel: $(ASMS) initcode
 	./tools/gen_binary_blobs 0 initcode
-	$(AS) $(ASFLAGS) -o _kernel -e 0x80003000 -start _start $(ASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
+	$(AS) $(ASFLAGS) -c -o _kernel -e 0x80003000 -start _start $(ASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
 	./tools/gen_binary_blobs `ruby -e "print open('_kernel').size + 0x80003000"` initcode
-	$(AS) $(ASFLAGS) -o _kernel -e 0x80003000 -start _start $(ASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
+	$(AS) $(ASFLAGS) -c -o _kernel -e 0x80003000 -start _start $(ASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
 	cat _kernel initcode > kernel
 	rm _kernel
 	./tools/attach_boot_header kernel
@@ -77,9 +77,9 @@ kernel: $(ASMS) initcode
 MEMFSASMS = $(filter-out _ide.s,$(ASMS)) _memide.s
 kernelmemfs: $(MEMFSASMS) initcode fs.img
 	./tools/gen_binary_blobs 0 initcode fs.img
-	$(AS) $(ASFLAGS) -o _kernelmemfs -e 0x80002000 -start _start $(MEMFSASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
+	$(AS) $(ASFLAGS) -c -o _kernelmemfs -e 0x80002000 -start _start $(MEMFSASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
 	./tools/gen_binary_blobs `ruby -e "print open('_kernelmemfs').size + 0x80002000"` initcode fs.img
-	$(AS) $(ASFLAGS) -o _kernelmemfs -e 0x80002000 -start _start $(MEMFSASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
+	$(AS) $(ASFLAGS) -c -o _kernelmemfs -e 0x80002000 -start _start $(MEMFSASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
 	cat _kernelmemfs initcode fs.img > kernelmemfs
 	rm _kernelmemfs
 	./tools/attach_boot_header kernelmemfs
