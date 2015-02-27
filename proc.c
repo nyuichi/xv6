@@ -275,23 +275,18 @@ scheduler(void)
     // Enable interrupts on this processor.
     sti();
 
-    cprintf("wow!\n");
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
-      cprintf("loop!\n");
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
       proc = p;
       switchuvm(p);
-      cprintf("switchuvm end. proc:0x%x\n", proc);
       p->state = RUNNING;
-      cprintf("swtch start. proc:0x%x\n", proc);
       swtch(&cpu->scheduler, proc->context);
-      cprintf("swtch end. proc:0x%x\n", proc);
       switchkvm();
 
       // Process is done running for now.
@@ -411,7 +406,6 @@ wakeup1(void *chan)
 {
   struct proc *p;
 
-  cprintf("wakeup1\n");
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     if(p->state == SLEEPING && p->chan == chan) {
       cprintf("process(%d) is waked up.\n", p->pid);
