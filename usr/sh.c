@@ -147,6 +147,7 @@ main(void)
   static char buf[100];
   int fd;
   
+  __asm("break 5\n");
   // Assumes three file descriptors open.
   while((fd = open("console", O_RDWR)) >= 0){
     if(fd >= 3){

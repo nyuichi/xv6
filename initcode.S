@@ -21,8 +21,6 @@ argv:
   .int 0
 
 start:
-  mov r1, SERIAL
-  mov [r1], 0x49  // print out 'I' to tell that we are here
   add rsp, rsp, -12
   mov [rsp+8], argv
   mov [rsp+4], init

@@ -23,10 +23,6 @@
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 static void itrunc(struct inode*);
-void xdip2gaia(char*, struct dinode*);
-void gdip2x86(struct dinode*, char*);
-void xdirent2gaia(char*, struct dirent*);
-void gdirent2x86(struct dirent*, char*);
 
 // Read the super block.
 void
@@ -523,15 +519,15 @@ dirlookup(struct inode *dp, char *name, uint *poff)
 {
   uint off, inum;
   struct dirent de;
-  char xdir[XDIRSIZE];
+  char xde[XDIRSIZE];
 
   if(dp->type != T_DIR)
     panic("dirlookup not DIR");
 
-  for(off = 0; off < dp->size; off += XDIRSIZE){
-    if(readi(dp, xdir, off, XDIRSIZE) != XDIRSIZE)
+  for(off = 0; off < dp->size; off += sizeof(xde)){
+    if(readi(dp, xde, off, sizeof(xde)) != sizeof(xde))
       panic("dirlink read");
-    xdirent2gaia(xdir, &de);
+    xdirent2gaia(xde, &de);
     if(de.inum == 0)
       continue;
     if(namecmp(name, de.name) == 0){
@@ -551,7 +547,8 @@ int
 dirlink(struct inode *dp, char *name, uint inum)
 {
   int off;
-  struct dirent de;
+  struct dirent de, de2;
+  char xde[XDIRSIZE];
   struct inode *ip;
 
   // Check that name is not present.
@@ -561,16 +558,18 @@ dirlink(struct inode *dp, char *name, uint inum)
   }
 
   // Look for an empty dirent.
-  for(off = 0; off < dp->size; off += sizeof(de)){
-    if(readi(dp, (char*)&de, off, sizeof(de)) != sizeof(de))
+  for(off = 0; off < dp->size; off += sizeof(xde)){
+    if(readi(dp, xde, off, sizeof(xde)) != sizeof(xde))
       panic("dirlink read");
+    xdirent2gaia(xde, &de);
     if(de.inum == 0)
       break;
   }
 
   strncpy(de.name, name, DIRSIZ);
   de.inum = inum;
-  if(writei(dp, (char*)&de, off, sizeof(de)) != sizeof(de))
+  gdirent2x86(&de, xde);
+  if(writei(dp, xde, off, sizeof(xde)) != sizeof(xde))
     panic("dirlink");
 
   return 0;
@@ -637,7 +636,6 @@ namex(char *path, int nameiparent, char *name)
       iunlockput(ip);
       return 0;
     }
-    cprintf("nameiparent:%d, path:%s\n", nameiparent, path);
     if(nameiparent && *path == '\0'){
       cprintf("namex, success0\n");
       // Stop one level early.
@@ -649,15 +647,11 @@ namex(char *path, int nameiparent, char *name)
       iunlockput(ip);
       return 0;
     }
-    cprintf("namex, iunlockput start\n");
     iunlockput(ip);
-    cprintf("namex, iunlockput end\n");
     ip = next;
   }
   if(nameiparent){
-    cprintf("namex, iput start\n");
     iput(ip);
-    cprintf("namex, iput end\n");
     return 0;
   }
   return ip;

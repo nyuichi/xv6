@@ -21,16 +21,20 @@ main(void)
 
   for(;;){
     printf(1, "init: starting sh\n");
+    __asm("break 1\n");
     pid = fork();
+    __asm("break 2\n");
     if(pid < 0){
       printf(1, "init: fork failed\n");
       exit();
     }
     if(pid == 0){
+      printf(1, "init: calling exec for sh\n");
       exec("sh", argv);
       printf(1, "init: exec sh failed\n");
       exit();
     }
+    printf(1, "init: wait...\n");
     while((wpid=wait()) >= 0 && wpid != pid)
       printf(1, "zombie!\n");
   }

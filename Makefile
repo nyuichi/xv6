@@ -112,7 +112,7 @@ mkfs: tools/mkfs.c fs.h
 # that disk image changes after first build are persistent until clean.  More
 # details:
 # http://www.gnu.org/software/make/manual/html_node/Chained-Rules.html
-.PRECIOUS: %.o
+#.PRECIOUS: _%.s
 
 UPROGS=\
 	_cat\

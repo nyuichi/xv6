@@ -167,10 +167,12 @@ isdirempty(struct inode *dp)
 {
   int off;
   struct dirent de;
+  char xde[XDIRSIZE];
 
-  for(off=2*sizeof(de); off<dp->size; off+=sizeof(de)){
-    if(readi(dp, (char*)&de, off, sizeof(de)) != sizeof(de))
+  for(off=2*sizeof(xde); off<dp->size; off+=sizeof(xde)){
+    if(readi(dp, xde, off, sizeof(xde)) != sizeof(xde))
       panic("isdirempty: readi");
+    xdirent2gaia(xde, &de);
     if(de.inum != 0)
       return 0;
   }
@@ -182,7 +184,7 @@ int
 sys_unlink(void)
 {
   struct inode *ip, *dp;
-  struct dirent de;
+  char xde[XDIRSIZE];
   char name[DIRSIZ], *path;
   uint off;
 
@@ -212,8 +214,8 @@ sys_unlink(void)
     goto bad;
   }
 
-  memset(&de, 0, sizeof(de));
-  if(writei(dp, (char*)&de, off, sizeof(de)) != sizeof(de))
+  memset(xde, 0, sizeof(xde));
+  if(writei(dp, xde, off, sizeof(xde)) != sizeof(xde))
     panic("unlink: writei");
   if(ip->type == T_DIR){
     dp->nlink--;
@@ -263,6 +265,7 @@ create(char *path, short type, short major, short minor)
   ip->minor = minor;
   ip->nlink = 1;
   iupdate(ip);
+  cprintf("test");
 
   if(type == T_DIR){  // Create . and .. entries.
     dp->nlink++;  // for ".."
@@ -288,8 +291,11 @@ sys_open(void)
   struct file *f;
   struct inode *ip;
 
+  cprintf("sys_open called\n");
   if(argstr(0, &path) < 0 || argint(1, &omode) < 0)
     return -1;
+  cprintf("sys_open, path:%s\n", path);
+  cprintf("sys_open, omode:%d\n", omode);
 
   begin_op();
 
@@ -398,8 +404,6 @@ sys_exec(void)
   int i;
   uint uargv, uarg;
 
-  cprintf("sysexec called\n");
-  cprintf("path addr:0x%x\n", (uint)&path);
   if(argstr(0, &path) < 0 || argint(1, (int*)&uargv) < 0){
     cprintf("sys_exec error1\n");
     return -1;

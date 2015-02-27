@@ -8,6 +8,8 @@ struct rtcdate;
 struct spinlock;
 struct stat;
 struct superblock;
+struct dirent;
+struct dinode;
 
 // bio.c
 void            binit(void);
@@ -51,6 +53,10 @@ struct inode*   nameiparent(char*, char*);
 int             readi(struct inode*, char*, uint, uint);
 void            stati(struct inode*, struct stat*);
 int             writei(struct inode*, char*, uint, uint);
+void            xdip2gaia(char*, struct dinode*);
+void            gdip2x86(struct dinode*, char*);
+void            xdirent2gaia(char*, struct dirent*);
+void            gdirent2x86(struct dirent*, char*);
 
 // ide.c
 void            ideinit(void);

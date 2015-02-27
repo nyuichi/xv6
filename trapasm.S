@@ -5,11 +5,9 @@
 
 .global alltraps
 alltraps:
+  break 3
   push r1            # r1 and r2 are stored in user stack. bad workaround.
   push r2
-  mov r1, SERIAL
-  mov r2, 0x54
-  mov [r1+0], r2  // print out 'T' to tell that we are here
   # Check whether interrupt happens in kernel mode or user mode
   mov  r1, cpu
   mov  r1, [r1]
@@ -88,8 +86,6 @@ alltraps_trapframe:
   # Return falls through to trapret...
 .global trapret
 trapret:
-  mov r1, SERIAL
-  mov [r1], 0x52  // print out 'R' to tell that we are here
 
   # cpu->privilege = tf->privilege
   mov r1, cpu
@@ -134,5 +130,6 @@ trapret:
   mov r1,  [rsp+132]
   # stack: Kernel -> User
   mov r30, [rsp+16]
+  break 4
 
   sysexit

@@ -36,7 +36,6 @@ trap(struct trapframe *tf)
   tf->trapno = readtrapno();
   tf->retaddr = readtreturn();
 
-  cprintf("trap called. tf->retaddr:0x%x\n", tf->retaddr);
   if(tf->trapno == T_SYSCALL){
     cprintf("syscall interrupt.\n");
     if(proc->killed)
@@ -50,7 +49,6 @@ trap(struct trapframe *tf)
 
   switch(tf->trapno){
   case T_IRQ0 + IRQ_TIMER:
-    cprintf("timer interrupt\n");
     if(cpu->id == 0){
       acquire(&tickslock);
       ticks++;

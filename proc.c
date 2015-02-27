@@ -95,6 +95,7 @@ userinit(void)
   memset(p->tf, 0, sizeof(*p->tf));
   p->tf->privilege = PL_USER;
   p->tf->r30     = PGSIZE;
+  p->tf->r31     = PGSIZE;
   p->tf->retaddr = 0;
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
