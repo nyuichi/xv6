@@ -21,9 +21,7 @@ main(void)
 
   for(;;){
     printf(1, "init: starting sh\n");
-    __asm("break 1\n");
     pid = fork();
-    __asm("break 2\n");
     if(pid < 0){
       printf(1, "init: fork failed\n");
       exit();

@@ -5,34 +5,28 @@
 
 .global alltraps
 alltraps:
-  break 3
-  push r1            # r1 and r2 are stored in user stack. bad workaround.
-  push r2
   # Check whether interrupt happens in kernel mode or user mode
-  mov  r1, cpu
-  mov  r1, [r1]
-  mov  r1, [r1+0]   # r1 = cpu->privilege
-  mov  r2, PL_KERN
-  cmpeq r2, r1, r2
-  mov   r1, rsp      # store rsp in r1 to make conditions meet with (1)
-  bnz    r2, alltraps_trapframe # if we are in kernel mode then jump
+  mov  k0, cpu
+  mov  k0, [k0]
+  mov  k0, [k0+0]   # k0 = cpu->privilege
+  mov  k1, PL_KERN
+  cmpeq k1, k0, k1
+  mov   k0, rsp      # store rsp in k0 to make conditions meet with (1)
+  bnz    k1, alltraps_trapframe # if we are in kernel mode then jump
 alltraps_stackchange:
   # stack: User -> Kernel
-  mov  r1, proc
-  mov  r1, [r1]
-  mov  r1, [r1+8]
-  mov  r2, KSTACKSIZE
-  add  r2, r1, r2
-  mov  r1, rsp       # save previous stack pointer in r1 -- (1)
-  mov  rsp, r2       # load kernel stack
+  mov  k0, proc
+  mov  k0, [k0]
+  mov  k0, [k0+8]
+  mov  k1, KSTACKSIZE
+  add  k1, k0, k1
+  mov  k0, rsp       # save previous stack pointer in k0 -- (1)
+  mov  rsp, k1       # load kernel stack
 
-  # Build trap frame.
-  mov r2, [r1+4]    
-  push r2            # push user r1
-  mov r2, [r1]
-  push r2            # push user r2
 alltraps_trapframe:
-  add r1, r1, 8      # shrink user stack
+  # Build trap frame.
+  push r1
+  push r2
   push r3
   push r4
   push r5
@@ -60,12 +54,12 @@ alltraps_trapframe:
   push r27
   push r28
   push r29
-  push r1           # previous stack is stored in r1
+  push k0           # previous stack is stored in k0
   push r31
 
   # Set in trap
-  push r1  # dummy for return addr
-  push r1  # dummy for trapno
+  push k0  # dummy for return addr
+  push k0  # dummy for trapno
 
   # push cpu->privilege
   mov r1, cpu

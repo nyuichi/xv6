@@ -6,6 +6,9 @@
 #define PL_USER 3
 #define PL_KERN 0
 
+#define k0 r26
+#define k1 r27
+
 #define HEADER_SIZE 4
 
 #ifndef __ASSEMBLER__

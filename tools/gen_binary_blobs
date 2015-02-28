@@ -9,7 +9,7 @@ def main
 end
 
 def error(msg)
-  STDERR.puts "mgs"
+  STDERR.puts msg
   exit 1
 end
 
@@ -36,6 +36,10 @@ def emit_binary_blobs(offset, filenames)
       error "No such file: #{filename}"
     end
   end
+  out.puts <<-EOS.gsub(/^[ ]*/, "")   # unindent
+    .global end
+    .set end, 0x#{"%08x" % offset}
+  EOS
   out.close
 end
 
