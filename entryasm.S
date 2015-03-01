@@ -15,6 +15,16 @@ entry:
   mov [r1], V2P_WO(entrypgdir)
   mov r1, VAENABLE
   mov [r1], 1
+  nop  # wait MMU
+  nop
+  nop
+  nop
+  nop
+  nop
+  nop
+  nop
+  nop
+  nop
   mov rsp, stack + KSTACKSIZE
   mov r1, main
   jr r1
