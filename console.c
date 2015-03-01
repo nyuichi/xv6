@@ -244,17 +244,12 @@ cprintf(char *fmt)
   uint *argp;
   char *s, *f;
 
-  return;
   locking = cons.locking;
   if(locking)
     acquire(&cons.lock);
 
   if (fmt == 0)
     panic("null fmt");
-
-  for(f="\ncprnt: "; *f; f++){
-    uartputc(*f);
-  }
 
   argp = (uint*)(void*)(&fmt + 1);
   for(i = 0; (c = fmt[i] & 0xff) != 0; i++){

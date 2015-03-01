@@ -48,9 +48,7 @@ uartgetc(void)
 {
   if(!uart)
     return -1;
-  if(!(inb(COM1+5) & 0x01))
-    return -1;
-  return inb(COM1+0);
+  return *(int*)SERIAL;
 }
 
 void

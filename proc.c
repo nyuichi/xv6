@@ -67,7 +67,6 @@ found:
    * instead, we set return address in forkret by inline assembly
   */
 
-  cprintf("trapframe address:0x%x\n", p->tf);
   sp -= sizeof *p->context;
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
@@ -272,7 +271,6 @@ scheduler(void)
   struct proc *p;
 
   for(;;){
-    cprintf("scheduler!\n");
     // Enable interrupts on this processor.
     sti();
 
@@ -324,11 +322,9 @@ void
 yield(void)
 {
   acquire(&ptable.lock);  //DOC: yieldlock
-  cprintf("yield start\n");
   proc->state = RUNNABLE;
   sched();
   release(&ptable.lock);
-  cprintf("yield end\n");
 }
 
 // A fork child's very first scheduling by scheduler()
@@ -337,7 +333,6 @@ void
 forkret(void)
 {
   static int first = 1;
-  cprintf("forkret start\n");
   // Still holding ptable.lock from scheduler.
   release(&ptable.lock);
 
@@ -350,7 +345,6 @@ forkret(void)
   }
 
 
-  cprintf("forkret end\n");
   // Return to "caller", actually trapret (see allocproc).
   // Because trapret is not actually caller, it does not add 4 to rsp after
   // we "return" to it, unlike regular function calls.
@@ -409,7 +403,6 @@ wakeup1(void *chan)
 
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     if(p->state == SLEEPING && p->chan == chan) {
-      cprintf("process(%d) is waked up.\n", p->pid);
       p->state = RUNNABLE;
     }
 }

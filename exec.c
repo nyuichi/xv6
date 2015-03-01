@@ -19,7 +19,6 @@ exec(char *path, char **argv)
   struct proghdr ph;
   pde_t *pgdir, *oldpgdir;
 
-  cprintf("exec called\n");
   begin_op();
   if((ip = namei(path)) == 0){
     end_op();
@@ -84,9 +83,9 @@ exec(char *path, char **argv)
   proc->sz = sz;
   proc->tf->retaddr = 0;  // entry point of user programs
   proc->tf->r30 = sp;
+  proc->tf->r31 = sp;
   switchuvm(proc);
   freevm(oldpgdir);
-  cprintf("exec exited normally\n");
   return 0;
 
  bad:

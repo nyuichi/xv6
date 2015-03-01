@@ -74,7 +74,6 @@ argstr(int n, char **pp)
   int addr;
   if(argint(n, &addr) < 0)
     return -1;
-  cprintf("argstr, addr:0x%x", addr);
   return fetchstr(addr, pp);
 }
 
@@ -131,7 +130,6 @@ void
 syscall(void)
 {
   int num;
-  cprintf("syscall called\n");
   num = proc->tf->r1;
   proc->tf->r1 = callsys(num);
   if(proc->tf->r1 < 0){

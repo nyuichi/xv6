@@ -265,7 +265,6 @@ create(char *path, short type, short major, short minor)
   ip->minor = minor;
   ip->nlink = 1;
   iupdate(ip);
-  cprintf("test");
 
   if(type == T_DIR){  // Create . and .. entries.
     dp->nlink++;  // for ".."
@@ -291,11 +290,8 @@ sys_open(void)
   struct file *f;
   struct inode *ip;
 
-  cprintf("sys_open called\n");
   if(argstr(0, &path) < 0 || argint(1, &omode) < 0)
     return -1;
-  cprintf("sys_open, path:%s\n", path);
-  cprintf("sys_open, omode:%d\n", omode);
 
   begin_op();
 
@@ -408,7 +404,6 @@ sys_exec(void)
     cprintf("sys_exec error1\n");
     return -1;
   }
-  cprintf("sys_exec, path:%s, uargv:%d\n", path, uargv);
   memset(argv, 0, sizeof(argv));
   for(i=0;; i++){
     if(i >= NELEM(argv)) {

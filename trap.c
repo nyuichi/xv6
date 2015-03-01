@@ -37,7 +37,6 @@ trap(struct trapframe *tf)
   tf->retaddr = readtreturn();
 
   if(tf->trapno == T_SYSCALL){
-    cprintf("syscall interrupt.\n");
     if(proc->killed)
       exit();
     proc->tf = tf;
@@ -66,7 +65,6 @@ trap(struct trapframe *tf)
     //kbdintr();
     break;
   case T_IRQ0 + IRQ_COM1:
-    cprintf("serial interrupt\n");
     uartintr();
     break;
   case T_IRQ0 + 7:

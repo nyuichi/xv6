@@ -632,18 +632,15 @@ namex(char *path, int nameiparent, char *name)
   while((path = skipelem(path, name)) != 0){
     ilock(ip);
     if(ip->type != T_DIR){
-      cprintf("namex, error0\n");
       iunlockput(ip);
       return 0;
     }
     if(nameiparent && *path == '\0'){
-      cprintf("namex, success0\n");
       // Stop one level early.
       iunlock(ip);
       return ip;
     }
     if((next = dirlookup(ip, name, 0)) == 0){
-      cprintf("namex, error1\n");
       iunlockput(ip);
       return 0;
     }

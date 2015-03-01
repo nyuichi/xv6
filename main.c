@@ -22,8 +22,6 @@ main(void)
 {
 
   // virtual addr is not yet implemented?
-  uartinit();      // early uartinit to enbale cprintf for debug purpose
-  cprintf("kinit1 start\n");
   kinit1(end, P2V(1024*1024)); // phys page allocator
   kvmalloc();      // kernel page table
   mpinit();       // collect info about this machine
@@ -32,28 +30,18 @@ main(void)
   consoleinit();   // I/O devices & their interrupts
   uartinit();      // serial port
 
-  cprintf("pinit...\n");
   pinit();         // process table
-  cprintf("trapinit...\n");
   trapinit();        // trap vectors
-  cprintf("binit...\n");
   binit();         // buffer cache
-  cprintf("fileinit...\n");
   fileinit();      // file table
-  cprintf("iinit...\n");
   iinit();         // inode cache
-  cprintf("ideinit...\n");
   ideinit();       // disk
-  cprintf("timerinit...\n");
   if(!ismp)
     timerinit();   // uniprocessor timer
 
-  cprintf("kinit2...\n");
   kinit2(P2V(1024*1024), P2V(PHYSTOP)); // must come after startothers()
 
-  cprintf("userinit...\n");
   userinit();      // first user process
-  cprintf("mpmain...\n");
   // Finish setting up this processor in mpmain.
   mpmain();
 }
