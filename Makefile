@@ -105,6 +105,9 @@ _%: _%.s $(ULIB)
 _forktest: usr/_forktest.s $(ULIB)
 	$(AS) $(ASFLAGS) -e 0 -o $@ usr/_forktest.s lib/_ulib.s lib/_usys.s $(UCCLIBS) -f __UCC_HEAP_START
 
+_sl: lib/_curses.s $(ULIB) usr/_sl.s
+	$(AS) $(ASFLAGS) -e 0 -o $@ usr/_sl.s lib/_curses.s $(ULIB) $(UCCLIBS) -f __UCC_HEAP_START
+
 mkfs: tools/mkfs.c fs.h
 	gcc -Werror -Wall -o mkfs tools/mkfs.c -I.. -idirafter . -g
 
@@ -129,6 +132,7 @@ UPROGS=\
 	_stressfs\
 	_wc\
 	_zombie\
+	_sl\
 	#_usertests\ # remove this to save file system size.
 
 fs.img: mkfs README $(UPROGS)
