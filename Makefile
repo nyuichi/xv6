@@ -76,7 +76,7 @@ kernel: $(ASMS) initcode
 # We use memfs as default because our CPU architecture has no disk.
 MEMFSASMS = $(filter-out _ide.s,$(ASMS)) _memide.s
 kernelmemfs: $(MEMFSASMS) initcode fs.img
-	./tools/gen_binary_blobs 0 initcode fs.img
+	./tools/gen_binary_blobs 0x80002000 initcode fs.img
 	$(AS) $(ASFLAGS) -c -o _kernelmemfs -e 0x80002000 -start _start $(MEMFSASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
 	./tools/gen_binary_blobs `ruby -e "print open('_kernelmemfs').size + 0x80002000"` initcode fs.img
 	$(AS) $(ASFLAGS) -c -o _kernelmemfs -e 0x80002000 -start _start $(MEMFSASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
