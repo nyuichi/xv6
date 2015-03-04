@@ -11,7 +11,6 @@ ASMS = \
 	_log.s\
 	_main.s\
 	_mp.s\
-	_picirq.s\
 	_pipe.s\
 	_proc.s\
 	_spinlock.s\
