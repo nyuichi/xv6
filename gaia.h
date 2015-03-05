@@ -1,5 +1,4 @@
 #ifndef __ASSEMBLER__
-#include "ucc.h"
 #include "memlayout.h"
 #endif
 
