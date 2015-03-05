@@ -132,6 +132,7 @@ UPROGS=\
 	_wc\
 	_zombie\
 	_sl\
+	_sed\
 	#_usertests\ # remove this to save file system size.
 
 fs.img: mkfs README $(UPROGS)
