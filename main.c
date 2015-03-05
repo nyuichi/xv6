@@ -9,10 +9,7 @@
 static void mpmain(void);
 extern pde_t *kpgdir;
 
-extern char __UCC_HEAP_START;
 extern char end[];
-
-void init_global_var();
 
 // Bootstrap processor starts running C code here.
 // Allocate a real stack and switch to it, first
@@ -21,7 +18,6 @@ int
 main(void)
 {
 
-  // virtual addr is not yet implemented?
   kinit1(end, P2V(1024*1024)); // phys page allocator
   kvmalloc();      // kernel page table
   mpinit();       // collect info about this machine
@@ -47,23 +43,11 @@ main(void)
 }
 
 
-/*
-// Other CPUs jump here from entryother.S.
-static void
-mpenter(void)
-{
-  switchkvm();
-  seginit();
-  lapicinit();
-  mpmain();
-}
-*/
 // Common CPU setup code.
 static void
 mpmain(void)
 {
   cprintf("cpu%d: starting\n", cpu->id);
-  idtinit();       // load idt register
   cpu->started = 1;
   scheduler();     // start running processes
 }

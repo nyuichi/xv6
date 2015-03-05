@@ -6,7 +6,6 @@
 #include "mmu.h"
 #include "proc.h"
 
-extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()
 //struct segdesc gdt[NSEGS];
 
@@ -71,11 +70,9 @@ mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)
 //   0..KERNBASE: user memory (text+data+stack+heap), mapped to
 //                phys memory allocated by the kernel
 //   KERNBASE..KERNBASE+EXTMEM: mapped to 0..EXTMEM (for I/O space)
-//   KERNBASE+EXTMEM..data: mapped to EXTMEM..V2P(data)
-//                for the kernel's instructions and r/o data
-//   data..KERNBASE+PHYSTOP: mapped to V2P(data)..PHYSTOP,
-//                                  rw data + free physical memory
-//   0xfe000000..0: mapped direct (devices such as ioapic)
+//   KERNBASE+EXTMEM..KERNBASE+PHYSTOP: mapped to EXTMEM..PHYSTOP
+//                for the kernel's instructions and r/o data,
+//                rw data + free physical memory
 //
 // The kernel allocates physical memory for its heap and for user memory
 // between V2P(end) and the end of physical memory (PHYSTOP)
@@ -136,11 +133,6 @@ void
 switchuvm(struct proc *p)
 {
   pushcli();
-  //cpu->gdt[SEG_TSS] = SEG16(STS_T32A, &cpu->ts, sizeof(cpu->ts)-1, 0);
-  //cpu->gdt[SEG_TSS].s = 0;
-  //cpu->ts.ss0 = SEG_KDATA << 3;
-  //cpu->ts.esp0 = (uint)proc->kstack + KSTACKSIZE;
-  //ltr(SEG_TSS << 3);
   if(p->pgdir == 0)
     panic("switchuvm: no pgdir");
   setpde(v2p(p->pgdir));  // switch to new address space

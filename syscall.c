@@ -7,10 +7,10 @@
 #include "gaia.h"
 #include "syscall.h"
 
-// User code makes a system call with INT T_SYSCALL.
-// System call number in %eax.
+// User code makes a system call with syscall
+// System call number in r1.
 // Arguments on the stack, from the user call to the C
-// library system call function. The saved user %esp points
+// library system call function. The saved user rsp points
 // to a saved program counter, and then the first argument.
 
 // Fetch the int at addr from the current process.

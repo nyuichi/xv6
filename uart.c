@@ -12,8 +12,6 @@
 #include "gaia.h"
 #include "memlayout.h"
 
-#define COM1    0x3f8
-
 static int uart;    // is there a uart?
 
 void

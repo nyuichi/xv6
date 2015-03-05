@@ -24,7 +24,7 @@ exec(char *path, char **argv)
   ilock(ip);
   pgdir = 0;
 
-  // Check ELF header
+  // read program header.
   if(readi(ip, (char*)&program_size, 0, sizeof(int)) < sizeof(int))
     goto bad;
 

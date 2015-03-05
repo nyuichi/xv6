@@ -54,7 +54,9 @@ release(struct spinlock *lk)
   popcli();
 }
 
-// Record the current call stack in pcs[] by following the %ebp chain.
+// Record the current call stack in pcs[] by following the %ebp chain in x86.
+// In GAIA architecture, we have no method to detect all callers right now.
+// This function does not work at all.
 void
 getcallerpcs(void *v, uint pcs[])
 {

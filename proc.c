@@ -146,10 +146,9 @@ fork(void)
   }
   np->sz = proc->sz;
   np->parent = proc;
-  //*np->tf = *proc->tf;
   memcpy(np->tf, proc->tf, sizeof(*np->tf));
 
-  // Clear %eax so that fork returns 0 in the child.
+  // Clear r1 so that fork returns 0 in the child.
   np->tf->r1 = 0;
 
   for(i = 0; i < NOFILE; i++)
@@ -258,8 +257,6 @@ wait(void)
 }
 
 //PAGEBREAK: 42
-// Per-CPU process scheduler.
-// Each CPU calls scheduler() after setting itself up.
 // Scheduler never returns.  It loops, doing:
 //  - choose a process to run
 //  - swtch to start running that process
