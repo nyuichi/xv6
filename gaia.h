@@ -144,7 +144,6 @@ readtreturn()
   return *(int*)EPC - 4; // GAIA stores interrupted address + 4.
 }
 
-//PAGEBREAK: 36
 // Layout of the trap frame built on the stack by the
 // hardware and by trapasm.S, and passed to trap().
 struct trapframe {

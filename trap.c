@@ -20,7 +20,6 @@ trapinit(void)
   initlock(&tickslock, "time");
 }
 
-//PAGEBREAK: 41
 void
 trap(struct trapframe *tf)
 {
@@ -68,7 +67,6 @@ trap(struct trapframe *tf)
             cpu->id);
     break;
 
-  //PAGEBREAK: 13
   default:
     /*
     if(proc == 0 || (tf->cs&3) == 0){

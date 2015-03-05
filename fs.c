@@ -170,7 +170,6 @@ iinit(void)
 
 static struct inode* iget(uint dev, uint inum);
 
-//PAGEBREAK!
 // Allocate a new inode with the given type on device dev.
 // A free inode has a type of zero.
 struct inode*
@@ -355,7 +354,6 @@ iunlockput(struct inode *ip)
   iput(ip);
 }
 
-//PAGEBREAK!
 // Inode content
 //
 // The content (data) associated with each inode is stored
@@ -441,7 +439,6 @@ stati(struct inode *ip, struct stat *st)
   st->size = ip->size;
 }
 
-//PAGEBREAK!
 // Read data from inode.
 int
 readi(struct inode *ip, char *dst, uint off, uint n)
@@ -469,7 +466,6 @@ readi(struct inode *ip, char *dst, uint off, uint n)
   return n;
 }
 
-// PAGEBREAK!
 // Write data to inode.
 int
 writei(struct inode *ip, char *src, uint off, uint n)
@@ -503,7 +499,6 @@ writei(struct inode *ip, char *src, uint off, uint n)
   return n;
 }
 
-//PAGEBREAK!
 // Directories
 
 int
@@ -575,7 +570,6 @@ dirlink(struct inode *dp, char *name, uint inum)
   return 0;
 }
 
-//PAGEBREAK!
 // Paths
 
 // Copy the next path element from path into name.

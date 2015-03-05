@@ -52,9 +52,3 @@ mpmain(void)
   scheduler();     // start running processes
 }
 
-//PAGEBREAK!
-// Blank page.
-//PAGEBREAK!
-// Blank page.
-//PAGEBREAK!
-// Blank page.
