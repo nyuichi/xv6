@@ -91,3 +91,29 @@ kalloc(void)
     release(&kmem.lock);
   return (char*)r;
 }
+
+// Allocate one page colored with col.
+// GAIA architecture now needs page coloring.
+char*
+kalloc_with_color(int col)
+{
+  struct run *r, *edge = 0;
+
+  if(kmem.use_lock)
+    acquire(&kmem.lock);
+  r = kmem.freelist;
+  do{
+    if(PGCOLOR(r) == col)
+      break; // found
+    edge = r;
+  }while(r && (r = r->next));
+  if(r){
+    if(edge == 0)
+      kmem.freelist = r->next;
+    else
+      edge->next = r->next;
+  }
+  if(kmem.use_lock)
+    release(&kmem.lock);
+  return (char*)r;
+}
