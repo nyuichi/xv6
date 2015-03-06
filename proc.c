@@ -27,7 +27,6 @@ pinit(void)
   initlock(&ptable.lock, "ptable");
 }
 
-//PAGEBREAK: 32
 // Look in the process table for an UNUSED proc.
 // If found, change state to EMBRYO and initialize
 // state required to run in the kernel.
@@ -75,7 +74,6 @@ found:
   return p;
 }
 
-//PAGEBREAK: 32
 // Set up first user process.
 void
 userinit(void)
@@ -146,10 +144,9 @@ fork(void)
   }
   np->sz = proc->sz;
   np->parent = proc;
-  //*np->tf = *proc->tf;
   memcpy(np->tf, proc->tf, sizeof(*np->tf));
 
-  // Clear %eax so that fork returns 0 in the child.
+  // Clear r1 so that fork returns 0 in the child.
   np->tf->r1 = 0;
 
   for(i = 0; i < NOFILE; i++)
@@ -257,9 +254,6 @@ wait(void)
   }
 }
 
-//PAGEBREAK: 42
-// Per-CPU process scheduler.
-// Each CPU calls scheduler() after setting itself up.
 // Scheduler never returns.  It loops, doing:
 //  - choose a process to run
 //  - swtch to start running that process
@@ -393,7 +387,6 @@ sleep(void *chan, struct spinlock *lk)
   }
 }
 
-//PAGEBREAK!
 // Wake up all processes sleeping on chan.
 // The ptable lock must be held.
 static void
@@ -439,7 +432,6 @@ kill(int pid)
   return -1;
 }
 
-//PAGEBREAK: 36
 // Print a process listing to console.  For debugging.
 // Runs when user types ^P on console.
 // No lock to avoid wedging a stuck machine further.

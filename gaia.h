@@ -1,5 +1,4 @@
 #ifndef __ASSEMBLER__
-#include "ucc.h"
 #include "memlayout.h"
 #endif
 
@@ -106,47 +105,6 @@ stosl(void *addr, int data, int cnt)
   }
 }
 
-//struct segdesc;
-/*
-static inline void
-lgdt(struct segdesc *p, int size)
-{
-  volatile ushort pd[3];
-
-  pd[0] = size-1;
-  pd[1] = (uint)p;
-  pd[2] = (uint)p >> 16;
-
-  //asm volatile("lgdt (%0)" : : "r" (pd));
-  }*/
-
-//struct gatedesc;
-
-/*
-static inline void
-lidt(struct gatedesc *p, int size)
-{
-  volatile ushort pd[3];
-
-  pd[0] = size-1;
-  pd[1] = (uint)p;
-  pd[2] = (uint)p >> 16;
-
-  //asm volatile("lidt (%0)" : : "r" (pd));
-  }*/
-
-static inline void
-ltr(ushort sel)
-{
-  //asm volatile("ltr %0" : : "r" (sel));
-}
-
-static inline void
-loadgs(ushort v)
-{
-  //asm volatile("movw %0, %%gs" : : "r" (v));
-}
-
 static inline void
 cli(void)
 {
@@ -166,28 +124,6 @@ readiflg(void)
   return *(int*)INTENABLE;
 }
 
-static inline uint
-xchg(volatile uint *addr, uint newval)
-{
-  uint result;
-
-  // The + in "+m" denotes a read-modify-write operand.
-  /*
-  asm volatile("lock; xchgl %0, %1" :
-               "+m" (*addr), "=a" (result) :
-               "1" (newval) :
-               "cc");
-  */
-  return result;
-}
-
-static inline uint
-rcr2(void)
-{
-  uint val;
-  //asm volatile("movl %%cr2,%0" : "=r" (val));
-  return val;
-}
 
 static inline void
 setpde(uint val)
@@ -208,7 +144,6 @@ readtreturn()
   return *(int*)EPC - 4; // GAIA stores interrupted address + 4.
 }
 
-//PAGEBREAK: 36
 // Layout of the trap frame built on the stack by the
 // hardware and by trapasm.S, and passed to trap().
 struct trapframe {

@@ -72,15 +72,6 @@ void            kinit2(void*, void*);
 // kbd.c
 void            kbdintr(void);
 
-// lapic.c
-void            cmostime(struct rtcdate *r);
-int             cpunum(void);
-extern volatile uint*    lapic;
-void            lapiceoi(void);
-void            lapicinit(void);
-void            lapicstartap(uchar, uint);
-void            microdelay(int);
-
 // log.c
 void            initlog(void);
 void            log_write(struct buf*);
@@ -91,17 +82,12 @@ void            end_op();
 extern int      ismp;
 void            mpinit(void);
 
-// picirq.c
-void            picenable(int);
-void            picinit(void);
-
 // pipe.c
 int             pipealloc(struct file**, struct file**);
 void            pipeclose(struct pipe*, int);
 int             piperead(struct pipe*, char*, int);
 int             pipewrite(struct pipe*, char*, int);
 
-//PAGEBREAK: 16
 // proc.c
 struct proc*    copyproc(struct proc*);
 void            exit(void);
@@ -151,7 +137,6 @@ void            syscall(void);
 void            timerinit(void);
 
 // trap.c
-void            idtinit(void);
 extern uint     ticks;
 void            trapinit(void);
 extern struct spinlock tickslock;
@@ -160,6 +145,7 @@ extern struct spinlock tickslock;
 void            uartinit(void);
 void            uartintr(void);
 void            uartputc(int);
+void            microdelay(int);
 
 // vm.c
 void            kvmalloc(void);

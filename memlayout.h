@@ -8,8 +8,8 @@
 #define KERNBASE 0x80000000         // First kernel virtual address
 #define KERNLINK (KERNBASE+EXTMEM)  // Address where kernel is linked
 
-// [0x80000000, 0x80002FFF] is special memory mapped area.
-// Access to these area is not tlanslated by MMU and always available.
+// [0x80000000, 0x80001FFF] is special memory mapped area.
+// Kernel MUST guarantee that this memory area is directly mapped to the physical same area.
 #define VAENABLE   0x80001200
 #define PDADDR     0x80001204
 #define INTHANDLER 0x80001100
