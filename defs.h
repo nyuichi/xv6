@@ -65,6 +65,7 @@ void            iderw(struct buf*);
 
 // kalloc.c
 char*           kalloc(void);
+char*           kalloc_with_color(int);
 void            kfree(char*);
 void            kinit1(void*, void*);
 void            kinit2(void*, void*);

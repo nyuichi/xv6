@@ -44,3 +44,6 @@
 // Address in page table or page directory entry
 #define PTE_ADDR(pte)   ((uint)(pte) & ~0xFFF)
 #define PTE_FLAGS(pte)  ((uint)(pte) &  0xFFF)
+
+// Macros for page coloring
+#define PGCOLOR(va)     ((uint)(va) & 0x3fff)
