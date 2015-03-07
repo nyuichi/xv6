@@ -8,102 +8,8 @@
 #define HEADER_SIZE 4
 
 #ifndef __ASSEMBLER__
-// copy
-// Routines to let C code use special GAIA instructions.
-static inline uchar
-inb(ushort port)
-{
-  __asm("\
-      halt\n\
-      mov r2, [rbp+4] \n\
-      ld  r1, r2, 0   \n\
-      ret             \n\
-  ");
-}
 
-static inline void
-insl(int port, void *addr, int cnt)
-{
-  __asm("\
-      halt\n\
-      mov r1, [rbp+4]     \n\
-      mov r2, [rbp+8]     \n\
-      mov r3, [rbp+12]    \n\
-    insl_L1:              \n\
-      blt r3, 0, insl_L2  \n\
-      sub r3, r3, 1       \n\
-      ld  r4, r1, 0       \n\
-      st  r4, r2, 0       \n\
-      add r2, r2, 4       \n\
-      add r3, r3, 4       \n\
-      br  insl_L1         \n\
-    insl_L2:              \n\
-      ret                 \n\
-  ");
-}
-
-static inline void
-outb(ushort port, uchar data)
-{
-  __asm("\
-      halt\n\
-      mov r1, [rbp+4]   \n\
-      mov r2, [rbp+8]   \n\
-      st  r2, r1, 0     \n\
-      ret               \n\
-  ");
-}
-
-static inline void
-outw(ushort port, ushort data)
-{
-  __asm("\
-      halt\n\
-      mov r1, [rbp+4]   \n\
-      mov r2, [rbp+8]   \n\
-      st  r2, r1, 0     \n\
-      ret               \n\
-  ");
-}
-
-static inline void
-outsl(int port, const void *addr, int cnt)
-{
-  __asm("\
-      halt\n\
-      mov r1, [rbp+4]       \n\
-      mov r2, [rbp+8]       \n\
-      mov r3, [rbp+12]      \n\
-    outsl_L1:               \n\
-      blt r3, 0, outsl_L2   \n\
-      sub r3, r3, 1         \n\
-      ld  r4, r2, 0         \n\
-      st  r4, r1, 0         \n\
-      add r2, r2, 4         \n\
-      add r3, r3, 4         \n\
-      br  outsl_L1          \n\
-    outsl_L2:               \n\
-      ret                   \n\
-  ");
-}
-
-static inline void
-stosb(void *addr, int data, int cnt)
-{
-  int i;
-  for (i = 0; i < cnt; i++) {
-    *(((char *) addr) + i) = (char) data;
-  }
-}
-
-static inline void
-stosl(void *addr, int data, int cnt)
-{
-  int i;
-  for (i = 0; i < cnt; i++) {
-    *(((int *) addr) + i) = data;
-  }
-}
+// Routines to let C code use special GAIA instructions and memory addresses.
 
 static inline void
 cli(void)
@@ -119,14 +25,14 @@ sti(void)
 
 // read interrupt flag
 static inline uchar
-readiflg(void)
+is_interruptible(void)
 {
   return *(int*)INTENABLE;
 }
 
 
 static inline void
-setpde(uint val)
+setpd(uint val)
 {
   *(int*)PDADDR = val;
 }

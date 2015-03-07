@@ -124,7 +124,7 @@ kvmalloc(void)
 void
 switchkvm(void)
 {
-  setpde(v2p(kpgdir));   // switch to the kernel page table
+  setpd(v2p(kpgdir));   // switch to the kernel page table
 }
 
 // Switch TSS and h/w page table to correspond to process p.
@@ -134,7 +134,7 @@ switchuvm(struct proc *p)
   pushcli();
   if(p->pgdir == 0)
     panic("switchuvm: no pgdir");
-  setpde(v2p(p->pgdir));  // switch to new address space
+  setpd(v2p(p->pgdir));  // switch to new address space
   popcli();
 }
 

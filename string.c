@@ -4,11 +4,17 @@
 void*
 memset(void *dst, int c, uint n)
 {
-  if ((int)dst%4 == 0 && n%4 == 0){
+  int i;
+
+  if((int)dst%4 == 0 && n%4 == 0){
     c &= 0xFF;
-    stosl(dst, (c<<24)|(c<<16)|(c<<8)|c, n/4);
-  } else
-    stosb(dst, c, n);
+    c |= (c<<24)|(c<<16)|(c<<8);
+    for (i = 0; i < n/4; i++)
+      *((int*)dst+i) = c;
+  }else{
+    for (i = 0; i < n; i++)
+      *((char*)dst+i) = c;
+  }
   return dst;
 }
 
@@ -102,4 +108,3 @@ strlen(const char *s)
     ;
   return n;
 }
-

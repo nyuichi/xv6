@@ -91,7 +91,7 @@ pushcli(void)
 {
   uchar iflg;
   
-  iflg = readiflg();
+  iflg = is_interruptible();
   cli();
   if(cpu->ncli++ == 0)
     cpu->intena = (int)iflg;
@@ -100,7 +100,7 @@ pushcli(void)
 void
 popcli(void)
 {
-  if(readiflg())
+  if(is_interruptible())
     panic("popcli - interruptible");
   if(--cpu->ncli < 0)
     panic("popcli");

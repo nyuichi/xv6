@@ -36,7 +36,17 @@ strlen(char *s)
 void*
 memset(void *dst, int c, uint n)
 {
-  stosb(dst, c, n);
+  int i;
+
+  if((int)dst%4 == 0 && n%4 == 0){
+    c &= 0xFF;
+    c |= (c<<24)|(c<<16)|(c<<8);
+    for (i = 0; i < n/4; i++)
+      *((int*)dst+i) = c;
+  }else{
+    for (i = 0; i < n; i++)
+      *((char*)dst+i) = c;
+  }
   return dst;
 }
 
