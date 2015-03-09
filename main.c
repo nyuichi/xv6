@@ -17,7 +17,6 @@ extern char end[];
 int
 main(void)
 {
-
   kinit1(end, P2V(1024*1024)); // phys page allocator
   kvmalloc();      // kernel page table
   mpinit();       // collect info about this machine
@@ -51,4 +50,3 @@ mpmain(void)
   cpu->started = 1;
   scheduler();     // start running processes
 }
-
