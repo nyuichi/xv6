@@ -18,6 +18,7 @@ ASMS = \
 	_swtch.s\
 	_syscall.s\
 	_sysfile.s\
+	_syshalt.s\
 	_sysproc.s\
 	_timer.s\
 	_trapasm.s\
@@ -133,6 +134,7 @@ UPROGS=\
 	_zombie\
 	_sl\
 	_sed\
+	_halt\
 	#_usertests\ # remove this to save file system size.
 
 fs.img: mkfs README $(UPROGS)

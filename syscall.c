@@ -98,6 +98,7 @@ extern int sys_unlink(void);
 extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
+extern int sys_halt(void);
 
 int callsys (int num) {
   switch(num){
@@ -122,6 +123,7 @@ int callsys (int num) {
   case SYS_link   : return sys_link();
   case SYS_mkdir  : return sys_mkdir();
   case SYS_close  : return sys_close();
+  case SYS_halt   : return sys_halt();
   default         : return -1;
   }
 }
