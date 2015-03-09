@@ -35,6 +35,7 @@ static inline void
 setpd(uint val)
 {
   *(int*)PDADDR = val;
+  __asm("nop\n.align 64\n");
 }
 
 // read trap no

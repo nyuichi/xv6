@@ -131,9 +131,10 @@ syscall(void)
 {
   int num;
   num = proc->tf->r1;
-  proc->tf->r1 = callsys(num);
-  if(proc->tf->r1 < 0){
-    cprintf("%d %s: unknown sys call %d\n",
-            proc->pid, proc->name, num);
+  if(num <= 0){
+    cprintf("%d %s: unknown sys call %d\n", proc->pid, proc->name, num);
+    panic("unknown sys call");
+  } else {
+    proc->tf->r1 = callsys(num);
   }
 }
