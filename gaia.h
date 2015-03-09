@@ -35,7 +35,7 @@ static inline void
 setpd(uint val)
 {
   *(int*)PDADDR = val;
-  __asm("nop\n.align 64\n");
+  __asm(".space 40\n");
 }
 
 // read trap no
@@ -45,7 +45,7 @@ readtrapno()
   return *(int*)CAUSE;
 }
 // read trap return address
-static inline uint 
+static inline uint
 readtreturn()
 {
   return *(int*)EPC - 4; // GAIA stores interrupted address + 4.
