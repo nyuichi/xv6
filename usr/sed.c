@@ -16,14 +16,14 @@
 #include "user.h"
 
 char buf[1024];
+char *extractline(char *option, int *start, int *end);
+ 
 void sed_delete(int fd, int start, int end);
 void sed_substitute(int fd, int start, int end, char *option);
 void sed_insert(int fd, int start, int end, char *txt);
 void sed_append(int fd, int start, int end, char *txt);
-char *extractline(char *option, int *start, int *end);
- 
-void sed(char *option, int fd)
-{
+
+void sed(char *option, int fd){
   int start, end;
 
   option = extractline(option, &start, &end);
@@ -50,13 +50,14 @@ void sed(char *option, int fd)
   }
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]){
   int fd, i;
   char *option;
 
   if(argc <= 1){
-    printf(2, "usage: sed [OPTION]\n");
+    printf(2, "usage: sed [OPTION] [input]\n");
+    printf(2, "OPTION: [line][command]\n");
+    printf(2, "command: d(delete), s(substitute), a(append), i(insert)\n");
     exit();
   }
   option = argv[1];
@@ -105,6 +106,12 @@ char *extractline(char *option, int *start, int *end){
   return option;
 }
 
+// line is in range
+int isrange(int start, int end, int line){
+  return start <= line && (line <= end || end == -1);
+}
+
+
 // delete line 
 void sed_delete(int fd, int start, int end){
   int n, m, l;
@@ -119,7 +126,7 @@ void sed_delete(int fd, int start, int end){
       l++;
       *q = 0;
 
-      if(end != -1 && (l < start || end < l)){
+      if(!isrange(start, end, l)){
         *q = '\n';
         write(1, p, q+1-p);
       }
@@ -134,9 +141,7 @@ void sed_delete(int fd, int start, int end){
   }
 }
 
-int replace(int fd, char *from, char *to, char *text);
-
-int parse_re_sub(char *re, char *from, char *to, int *g){
+int parse_regexp_sub(char *re, char *from, char *to, int *g){
   char *p, *q;
 
   if(*re != '/') return -1;
@@ -167,80 +172,33 @@ int parse_re_sub(char *re, char *from, char *to, int *g){
   return 0;
 }
 
-// substitute line
-void sed_substitute(int fd, int start, int end, char *re){
-  int n, m, l, g;
-  char *p, *q;
-  char from[128], to[128];
-
-  if(parse_re_sub(re, from, to, &g) < 0){
-    printf(1, "sed: unknown regexp\n");
-    exit();
-  }
-
-  m = 0;
-  l = 0;
-  while((n = read(fd, buf+m, sizeof(buf)-m)) >0 ){
-    m += n;
-    p = buf;
-    while((q = strchr(p, '\n')) != 0){
-      l++;
-      *q = 0;
-
-      if(end != -1 && (l < start || end < l)){
-        *q = '\n';
-        write(1, p, q+1-p);
-      }else{
-        *q = '\n';
-        if(replace(1, from, to, p)){
-          // write in replace
-        }else{
-          write(1, p, q+1-p);
-        }
-      }
-      p = q+1;
-    }
-    if(p == buf)
-      m=0;
-    if(m > 0){
-      m -= p - buf;
-      memmove(buf, p, m);
-    }
-  } 
-}
-
-// Regexp replaceer from Kernighan & Pike,
-// The Practice of Programming, Chapter 9.
-
-void outputreplace(int fd, char *text, char *s, char *e, char *to){
+void outputreplace(char *text, char *s, char *e, char *to){
   int i, j;
   for(i=0; *(to+i) != '\0'; ++i)
     ;
   for(j=0; *(e+j) != '\n'; ++j)
     ;
-  write(fd, text, s-text);
-  write(fd, to, i);
-  write(fd, e, j+1);
+  write(1, text, s-text);
+  write(1, to, i);
+  write(1, e, j+1);
 }
 
 char *replacebegin(char *re, char *text);
 char *replacestar(int c, char *re, char *text);
 
-int
-replace(int fd, char *from, char *to, char *text)
-{
+int replace(char *from, char *to, char *text){
   char *bak,*s,*e;
   bak = text;
   if(from[0] == '^'){
     s = text;
     e = replacebegin(from+1, text);
-    outputreplace(fd, bak, s, e, to);
+    outputreplace(bak, s, e, to);
     return 1;
   }
   do{  // must look at empty string
     s = text;
     if((e = replacebegin(from, text)) != 0){
-      outputreplace(fd, bak, s, e, to);
+      outputreplace(bak, s, e, to);
       return 1;
     }
   }while(*text++ != '\0');
@@ -248,8 +206,7 @@ replace(int fd, char *from, char *to, char *text)
 }
 
 // replacebegin: search for re at beginning of text
-char *replacebegin(char *re, char *text)
-{
+char *replacebegin(char *re, char *text){
   if(re[0] == '\0'){
     return text;
   }
@@ -269,14 +226,55 @@ char *replacebegin(char *re, char *text)
 }
 
 // replacestar: search for c*re at beginning of text
-char *replacestar(int c, char *re, char *text)
-{
+char *replacestar(int c, char *re, char *text){
   char *tmp;
   do{  // a * replacees zero or more instances
     if(tmp = replacebegin(re, text))
       return tmp;
   }while(*text!='\0' && (*text++==c || c=='.'));
   return 0;
+}
+
+// substitute line
+void sed_substitute(int fd, int start, int end, char *re){
+  int n, m, l, g;
+  char *p, *q;
+  char from[128], to[128];
+
+  if(parse_regexp_sub(re, from, to, &g) < 0){
+    printf(1, "sed: unknown regexp\n");
+    exit();
+  }
+
+  m = 0;
+  l = 0;
+  while((n = read(fd, buf+m, sizeof(buf)-m)) >0 ){
+    m += n;
+    p = buf;
+    while((q = strchr(p, '\n')) != 0){
+      l++;
+      *q = 0;
+
+      if(!isrange(start, end, l)){
+        *q = '\n';
+        write(1, p, q+1-p);
+      }else{
+        *q = '\n';
+        if(replace(from, to, p)){
+          // write in replace
+        }else{
+          write(1, p, q+1-p);
+        }
+      }
+      p = q+1;
+    }
+    if(p == buf)
+      m=0;
+    if(m > 0){
+      m -= p - buf;
+      memmove(buf, p, m);
+    }
+  } 
 }
 
 // append, insert 
@@ -308,7 +306,7 @@ void sed_insert_append(int flg, int fd, int start, int end, char *txt){
       l++;
       *q = 0;
 
-      if(end != -1 && (l < start || end < l)){
+      if(!isrange(start, end, l)){
         *q = '\n';
         write(1, p, q+1-p);
       }else{
