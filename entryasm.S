@@ -35,10 +35,10 @@ entry:
 .align 4096
 .global entrypgdir
 entrypgdir:
-  .int    0, 1024
+  .space 4096
 .global entrypgtable
 entrypgtable:
-  .int    0, 1024
+  .space 4096
 .global stack
 stack:
-  .int    0, KSTACKSIZE
+  .space KSTACKSIZE
