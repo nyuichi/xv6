@@ -2,10 +2,27 @@
 #include "stat.h"
 #include "user.h"
 
+char pbuf[256], *p;
+
+static void
+flush(int fd)
+{
+  if (p != 0) {
+    write(fd, pbuf, p-pbuf);
+  }
+  p = pbuf;
+}
+
 static void
 putc(int fd, char c)
 {
-  write(fd, &c, 1);
+  if (p == 0) {
+    p = pbuf;
+  }
+  *p++ = c;
+  if (p == pbuf + 256) {
+    flush(fd);
+  }
 }
 
 static void
@@ -82,4 +99,5 @@ printf(int fd, char *fmt, ...)
       state = 0;
     }
   }
+  flush(fd);
 }
