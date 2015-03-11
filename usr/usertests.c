@@ -1,10 +1,10 @@
-#include "param.h"
-#include "types.h"
-#include "stat.h"
-#include "user.h"
-#include "fs.h"
-#include "fcntl.h"
-#include "syscall.h"
+#include <xv6/param.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <xv6/user.h>
+#include <xv6/fs.h>
+#include <sys/fcntl.h>
+#include <sys/syscall.h>
 #include "traps.h"
 #include "memlayout.h"
 

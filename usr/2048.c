@@ -1,5 +1,5 @@
-#include "types.h"
-#include "user.h"
+#include <sys/types.h>
+#include <xv6/user.h>
 
 #define true  1
 #define false 0

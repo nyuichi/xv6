@@ -1,11 +1,11 @@
-#include "types.h"
+#include <sys/types.h>
+#include <xv6/param.h>
+#include <sys/syscall.h>
 #include "defs.h"
-#include "param.h"
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
 #include "gaia.h"
-#include "syscall.h"
 
 // User code makes a system call with syscall
 // System call number in r1.

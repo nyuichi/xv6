@@ -1,7 +1,7 @@
-#include "types.h"
-#include "stat.h"
-#include "user.h"
-#include "fs.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <xv6/user.h>
+#include <xv6/fs.h>
 
 char*
 fmtname(char *path)

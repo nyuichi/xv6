@@ -1,6 +1,6 @@
-#include "types.h"
-#include "stat.h"
-#include "user.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <xv6/user.h>
 
 char pbuf[256], *p;
 

@@ -2,7 +2,7 @@
 // Only used on uniprocessors;
 // SMP machines use the local APIC timer.
 
-#include "types.h"
+#include <sys/types.h>
 #include "defs.h"
 #include "traps.h"
 #include "gaia.h"
