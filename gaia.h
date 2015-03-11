@@ -1,5 +1,6 @@
 #ifndef __ASSEMBLER__
 #include "memlayout.h"
+#include "traps.h"
 #endif
 
 #define PL_USER 3
@@ -35,7 +36,7 @@ static inline void
 setpd(uint val)
 {
   *(int*)PDADDR = val;
-  __asm(".space 40\n");
+  __asm(".space 40\n"); // 10 nops
 }
 
 // read trap no
@@ -48,7 +49,12 @@ readtrapno()
 static inline uint
 readtreturn()
 {
-  return *(int*)EPC - 4; // GAIA stores interrupted address + 4.
+  switch(readtrapno()){
+    case T_SYSCALL:
+      return *(int*)EPC; // GAIA stores the correct interrupted address for sysenter exception.
+    default:
+      return *(int*)EPC - 4; // GAIA stores interrupted address + 4 for the others.
+  }
 }
 
 // Layout of the trap frame built on the stack by the

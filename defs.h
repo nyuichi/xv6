@@ -146,7 +146,7 @@ extern struct spinlock tickslock;
 void            uartinit(void);
 void            uartintr(void);
 void            uartputc(int);
-void            microdelay(int);
+void            microdelay();
 
 // vm.c
 void            kvmalloc(void);

@@ -17,6 +17,7 @@
 #define EPC        0x80001108
 #define CAUSE      0x8000110C
 #define SERIAL     0x80001000
+#define SERIALWE   0x80001000
 
 #ifndef __ASSEMBLER__
 #ifndef V2P_P2V
