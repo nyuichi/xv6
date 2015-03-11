@@ -36,7 +36,7 @@ uartputc(int c)
   int i;
   if(!uart)
     return;
-  while(*(int*)SERIALWE == 0) microdelay;
+  while(*(int*)SERIALWE == 0) microdelay();
   *(int*)SERIAL = c;
 }
 
