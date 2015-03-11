@@ -1,8 +1,7 @@
-#include "types.h"
+#include <sys/types.h>
+#include <xv6/param.h>
 #include "gaia.h"
 #include "defs.h"
-#include "date.h"
-#include "param.h"
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"

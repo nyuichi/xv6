@@ -1,8 +1,7 @@
-#include "types.h"
-#include "stat.h"
-#include "fcntl.h"
-#include "user.h"
-#include "gaia.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/fcntl.h>
+#include <xv6/user.h>
 
 char*
 strcpy(char *s, char *t)

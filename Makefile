@@ -40,32 +40,18 @@ else
   SIM = $(GAIASOFTDIR)/sim
 endif
 
-CFLAGS = -I.
+CFLAGS = -I. -I./include
+NATIVECFLAGS = $(CFLAGS)
 ASFLAGS = -v -Wno-unused-label
-SIMFLAGS = -stat
+SIMFLAGS = -stat -debug
 VPATH = lib:usr
 
 xv6.img: kernelmemfs
 	dd if=kernelmemfs of=xv6.img
 
-xv6nomemfs.img: kernel fs.img
-	dd if=kernel of=xv6nomemfs.img
-
-bootblock: bootasm.S bootmain.c
-	# TODO: do nothing now
-
 initcode: initcode.S
-	$(NATIVECC) -E -o _initcode.s $<
+	$(NATIVECC) $(NATIVECFLAGS) -E -o _initcode.s $<
 	$(AS) -c -Wno-unused-label _initcode.s -r -e 0 -o initcode
-
-kernel: $(ASMS) initcode
-	./tools/gen_binary_blobs 0 initcode
-	$(AS) $(ASFLAGS) -c -o _kernel -e 0x80003000 -start _start $(ASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
-	./tools/gen_binary_blobs `ruby -e "print open('_kernel').size + 0x80003000"` initcode
-	$(AS) $(ASFLAGS) -c -o _kernel -e 0x80003000 -start _start $(ASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
-	cat _kernel initcode > kernel
-	rm _kernel
-	./tools/attach_boot_header kernel
 
 # kernelmemfs is a copy of kernel that maintains the
 # disk image in memory instead of writing to a disk.
@@ -90,13 +76,13 @@ tags: $(ASMS) _init
 ULIB = lib/_ulib.s lib/_usys.s lib/_printf.s lib/_umalloc.s
 
 _%.s: %.S
-	$(NATIVECC) -E -I. -o $@ $<
+	$(NATIVECC) $(NATIVECFLAGS) -E -I. -o $@ $<
 
 _%.s: %.c
 	$(CC) $(CFLAGS) -s -o $@ $<
 
 lib/_usys.s: lib/usys.S
-	$(NATIVECC) -E -I. -o $@ $<
+	$(NATIVECC) $(NATIVECFLAGS) -E -I. -o $@ $<
 	sed -i "s/;/\n/g" $@
 
 _%: _%.s $(ULIB)
@@ -108,8 +94,8 @@ _forktest: usr/_forktest.s $(ULIB)
 _sl: lib/_curses.s $(ULIB) usr/_sl.s
 	$(AS) $(ASFLAGS) -e 0 -o $@ usr/_sl.s lib/_curses.s $(ULIB) $(UCCLIBS) -f __UCC_HEAP_START
 
-mkfs: tools/mkfs.c fs.h
-	gcc -Werror -Wall -o mkfs tools/mkfs.c -I.. -idirafter . -g
+mkfs: tools/mkfs.c 
+	gcc -Werror -Wall -o mkfs tools/mkfs.c -idirafter ./include -idirafter . -g
 
 # Prevent deletion of intermediate files, e.g. cat.o, after first build, so
 # that disk image changes after first build are persistent until clean.  More
@@ -154,7 +140,4 @@ clean:
 	usr/*.o usr/*.d usr/*.sym usr/*.asm usr/_*.s
 
 sim: xv6.img
-	$(SIM) $(SIMFLAGS) xv6.img -debug
-
-sim-meta-gdb: xv6.img
-	gdb -tui --args $(SIM) $(SIMFLAGS) xv6.img
+	$(SIM) $(SIMFLAGS) xv6.img

@@ -1,4 +1,4 @@
-#include "types.h"
+#include <sys/types.h>
 #include "gaia.h"
 #include "memlayout.h"
 

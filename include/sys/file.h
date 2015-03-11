@@ -8,6 +8,7 @@ struct file {
   uint off;
 };
 
+#define NADDR 13
 
 // in-memory copy of an inode
 struct inode {
@@ -21,7 +22,7 @@ struct inode {
   short minor;
   short nlink;
   uint size;
-  uint addrs[NDIRECT+1];
+  uint addrs[NADDR];  // NADDR is equal to NDIRECT + 1 on xv6 file system. NDIRECT is defined in fs.h
 };
 #define I_BUSY 0x1
 #define I_VALID 0x2

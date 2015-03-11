@@ -1,4 +1,4 @@
-#include "param.h"
+#include <xv6/param.h>
 #include "memlayout.h"
 
 .global entry

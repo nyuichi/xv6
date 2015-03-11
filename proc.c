@@ -1,6 +1,6 @@
-#include "types.h"
+#include <sys/types.h>
+#include <xv6/param.h>
 #include "defs.h"
-#include "param.h"
 #include "memlayout.h"
 #include "mmu.h"
 #include "gaia.h"

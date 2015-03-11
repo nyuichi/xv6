@@ -1,4 +1,4 @@
-#include "param.h"
+#include <xv6/param.h>
 #include "mmu.h"
 #include "memlayout.h"
 #include "gaia.h"

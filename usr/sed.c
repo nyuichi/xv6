@@ -11,9 +11,9 @@
 //  * sed 3apqr
 //   -> insert pqr after line 3
 
-#include "types.h"
-#include "stat.h"
-#include "user.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <xv6/user.h>
 
 char buf[1024];
 char *extractline(char *option, int *start, int *end);

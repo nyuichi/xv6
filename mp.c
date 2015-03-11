@@ -1,9 +1,9 @@
 // GAIA does not support Multiprocessor.
 // Only a few initalizations are done here.
 
-#include "types.h"
+#include <sys/types.h>
 #include "defs.h"
-#include "param.h"
+#include <xv6/param.h>
 #include "memlayout.h"
 #include "gaia.h"
 #include "mmu.h"

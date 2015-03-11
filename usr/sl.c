@@ -1,7 +1,7 @@
-#include "types.h"
-#include "user.h"
+#include <sys/types.h>
+#include <xv6/user.h>
+#include <curses.h>
 #include "sl.h"
-#include "curses.h"
 
 void add_smoke(int y, int x);
 void add_man(int y, int x);

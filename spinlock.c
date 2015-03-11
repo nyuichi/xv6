@@ -1,8 +1,8 @@
 // Mutual exclusion spin locks.
 
-#include "types.h"
+#include <sys/types.h>
+#include <xv6/param.h>
 #include "defs.h"
-#include "param.h"
 #include "gaia.h"
 #include "memlayout.h"
 #include "mmu.h"

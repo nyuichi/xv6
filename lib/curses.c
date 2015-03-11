@@ -1,6 +1,6 @@
-#include "types.h"
-#include "user.h"
-#include "curses.h"
+#include <sys/types.h>
+#include <xv6/user.h>
+#include <curses.h>
 
 // screen buffer
 typedef charcell ScreenType[LINES][COLS];
