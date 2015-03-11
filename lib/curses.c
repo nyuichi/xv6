@@ -19,10 +19,10 @@ void initscr(){
 void curs_set(int a){
   switch(a){
   case 0: //
-    printf(1, "\033[>5h");
+    printf(1, "\033[?25l");
     break;
   case 1: // default
-    printf(1, "\033[>5l");
+    printf(1, "\033[?25h");
     break;
   }
 }

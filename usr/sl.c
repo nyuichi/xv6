@@ -50,6 +50,7 @@ int main(int argc, char *argv[])
     }
   }
   initscr();
+  curs_set(0);
 
   for (x = COLS - 1; ; --x) {
     if (LOGO == 1) {
@@ -64,7 +65,7 @@ int main(int argc, char *argv[])
     refresh();
   }
 
-  printf(1, "\n");
+  endwin();
   exit();
 }
 
