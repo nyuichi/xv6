@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
     refresh();
   }
 
+  printf(1, "\n");
   exit();
 }
 

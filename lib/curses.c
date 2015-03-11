@@ -9,12 +9,30 @@ ScreenType screen;
 // cursol location
 int cursolX, cursolY;
 
+// initializes
 void initscr(){
   clear();
   cursolX = 0;
   cursolY = 0;
 }
 
+void curs_set(int a){
+  switch(a){
+  case 0: //
+    printf(1, "\033[>5h");
+    break;
+  case 1: // default
+    printf(1, "\033[>5l");
+    break;
+  }
+}
+
+void endwin(){
+  curs_set(1);
+  printf(1, "\n");
+}
+
+// outputs
 int clear(){
   if(erase() == ERR)
     return ERR;
@@ -25,6 +43,7 @@ int clear(){
 
 int erase(){
   int i,j;
+  printf(1, "\033[2J"); // clear screen
   for(i=0; i<LINES; ++i){
     for(j=0; j<COLS; ++j){
       screen[i][j].letter = ' ';
@@ -47,15 +66,28 @@ int move(int y, int x){
 
 int addch(char c){
   screen[cursolY][cursolX].letter = c;
+  cursolX++;
+  if(cursolX >= COLS){
+    cursolX -= COLS;
+    cursolY++;
+  }
   return OK;
 }
 
 int addstr(char*str){
   int i;
-  for(i=cursolX; str[i]!='\0'; i++){
-    if(i < 0 || COLS <= i)
+  for(i=0; str[i]!='\0'; i++){
+    if(cursolY >= LINES)
       return ERR;
-    screen[cursolY][i].letter = str[i - cursolX];
+
+    screen[cursolY][cursolX].letter = str[i];
+
+    cursolX++;
+    if(cursolX >= COLS){
+      cursolX -= COLS;
+      cursolY++;
+    }
+
   }
   return OK;
 }
@@ -78,13 +110,16 @@ int mvaddstr(int y, int x, char*str){
 
 int refresh(){
   int i,j;
-  printf(1, "\033[2J");   // clear screen
-  printf(1, "\033[0;0H"); // move cursol to (0,0)
+  char buf[LINES*(COLS+1)] = {0};
+  printf(1, "\033[H"); // move cursol to top left
   for(i=0; i<LINES; ++i){
     for(j=0; j<COLS; ++j){
-      printf(1, "%c", screen[i][j].letter);
+      buf[i*(COLS+1) + j] = screen[i][j].letter;
     }
-    printf(1, "\n");
+    if(i!=LINES-1)
+      buf[(i+1)*(COLS+1) -1] = '\n';
   }
+  buf[LINES * (COLS+1) -1] = '\0';
+  printf(1, "%s", buf);
   return OK;
 }

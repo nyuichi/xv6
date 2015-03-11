@@ -12,6 +12,8 @@ typedef struct charcell{
 
 // initializes
 void initscr();
+void curs_set(int);
+void endwin();
 
 // outputs
 int clear();                   // clear & refresh screen
