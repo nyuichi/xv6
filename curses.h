@@ -2,8 +2,8 @@
 #define ERR 1
 
 // console size
-#define COLS  20
-#define LINES 13
+#define COLS  80
+#define LINES 24
 
 typedef struct charcell{
   char letter;
