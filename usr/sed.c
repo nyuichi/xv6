@@ -137,6 +137,7 @@ void sed_delete(int fd, int start, int end){
     if(m > 0){
       m -= p - buf;
       memmove(buf, p, m);
+      memset(buf+m, '\0', sizeof(buf)-m);
     }
   }
 }
@@ -273,6 +274,7 @@ void sed_substitute(int fd, int start, int end, char *re){
     if(m > 0){
       m -= p - buf;
       memmove(buf, p, m);
+      memset(buf+m, '\0', sizeof(buf)-m);
     }
   } 
 }
@@ -324,6 +326,7 @@ void sed_insert_append(int flg, int fd, int start, int end, char *txt){
     if(m > 0){
       m -= p - buf;
       memmove(buf, p, m);
+      memset(buf+m, '\0', sizeof(buf)-m);
     }
   } 
 }
