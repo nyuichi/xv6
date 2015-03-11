@@ -24,10 +24,24 @@ int myrand(int n) {
 }
 int getchar(void)
 {
-  __asm("\
-  read r1 \n                                    \
-  ret     \n                                    \
-");
+  char buf[1];
+
+  read(1, buf, 1);
+
+  return buf[0];
+}
+
+void print_int(int d)
+{
+  if (d < 10) {
+    printf(1, "   %d", d);
+  } else if (d < 100) {
+    printf(1, "  %d", d);
+  } else if (d < 1000) {
+    printf(1, " %d", d);
+  } else {
+    printf(1, "%d", d);
+  }
 }
 
 void showBoard(){
@@ -39,10 +53,12 @@ void showBoard(){
     printf(1, "|      |      |      |      |\n");
     printf(1, "| ");
     for(j=0; j<4; j++){
-      if(board[i][j] != 0)
-        printf(1, "%d | ", 1 << board[i][j]);
-      else
+      if(board[i][j] != 0) {
+        print_int(1 << board[i][j]);
+        printf(1, " | ");
+      } else {
         printf(1, "     | ");
+      }
     }
     printf(1, "\n");
     printf(1, "|      |      |      |      |\n");
@@ -226,9 +242,14 @@ int main(){
   do{
     showBoard();
     printf(1, "score: %d\n", score);
+    printf(1, "(enter \'q\' to exit...)\n", score);
+    printf(1, "> ");
     do{
-      printf(1, "> ");
-      d = c2dir(getchar());
+      char c;
+      c = getchar();
+      if (c == 'q')
+        exit();
+      d = c2dir(c);
     } while(d==-1 || !movable(d));
     Move(d);
     putNum();
