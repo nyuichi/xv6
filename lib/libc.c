@@ -693,7 +693,7 @@ int vsprintf(char *s, const char *fmt, va_list ap)
 void abort(void)
 {
   printf("abort!\n");
-  __asm("  halt\n");
+  exit(1);
 }
 
 int abs(int n)
