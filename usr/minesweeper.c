@@ -315,7 +315,7 @@ void mine_help(){
   printf(1, "  i, init x (x = 1,2)\n");
   printf(1, "  o, open x y\n");
   printf(1, "  m, mark x y\n");
-  printf(1, "  q, qiut    \n");
+  printf(1, "  q, quit    \n");
 }
 
 int action(struct command *com){
