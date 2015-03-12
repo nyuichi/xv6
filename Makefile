@@ -123,6 +123,7 @@ UPROGS=\
 	_halt\
 	_2048\
         _minesweeper\
+	_pwd\
 	#_usertests\ # remove this to save file system size.
 
 fs.img: mkfs README $(UPROGS)
