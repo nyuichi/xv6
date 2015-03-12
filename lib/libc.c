@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #define max(m, n)   ((m) > (n) ? (m) : (n))
 #define min(m, n)   ((m) < (n) ? (m) : (n))
@@ -85,19 +86,13 @@ FILE *stderr = &stdout_entity;
 
 int putchar(int c)
 {
-  __asm("\
-  mov r1, [rbp + 4] \n\
-  write r1          \n\
-  ret               \n\
-");
+  write(1, &c, 1);
 }
 
 int getchar(void)
 {
-  __asm("\
-  read r1 \n\
-  ret     \n\
-");
+  char c;
+  read(0, &c, 1);
 }
 
 int putc(int c, FILE *stream)

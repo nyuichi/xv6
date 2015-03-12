@@ -1,3 +1,6 @@
+#ifndef _XV6_USER_H
+#define _XV6_USER_H
+
 struct stat;
 struct rtcdate;
 
@@ -11,7 +14,9 @@ int read(int, void*, int);
 int close(int);
 int kill(int);
 int exec(char*, char**);
+#ifndef _UCC_FCNTL_H
 int open(char*, int);
+#endif
 int mknod(char*, short, short);
 int unlink(char*);
 int fstat(int fd, struct stat*);
@@ -38,3 +43,5 @@ void* memset(void*, int, uint);
 void* malloc(uint);
 void free(void*);
 int atoi(const char*);
+
+#endif

@@ -74,6 +74,7 @@ tags: $(ASMS) _init
 	etags *.S *.c
 
 ULIB = lib/_ulib.s lib/_usys.s lib/_printf.s lib/_umalloc.s
+LIBC = lib/_libc.s lib/_usys.s
 
 _%.s: %.S
 	$(NATIVECC) $(NATIVECFLAGS) -E -I. -o $@ $<
@@ -86,6 +87,9 @@ lib/_usys.s: lib/usys.S
 	sed -i "s/;/\n/g" $@
 
 _%: _%.s $(ULIB)
+	$(AS) $(ASFLAGS) -e 0 -o $@ $^ $(UCCLIBS) -f __UCC_HEAP_START
+
+_cat: _cat.s $(LIBC)
 	$(AS) $(ASFLAGS) -e 0 -o $@ $^ $(UCCLIBS) -f __UCC_HEAP_START
 
 _forktest: usr/_forktest.s $(ULIB)

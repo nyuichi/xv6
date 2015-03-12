@@ -1,7 +1,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/fcntl.h>
 #include <xv6/user.h>
+#include <fcntl.h>
 
 char*
 strcpy(char *s, char *t)
