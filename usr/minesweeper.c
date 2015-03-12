@@ -1,9 +1,7 @@
 /*
  *
  * [TODO]
- *  : inititalize while playing
  *  : invalid command when reading "o 2"
- *  : 16 x 16 game board
  */
 
 #include <sys/types.h>
@@ -14,11 +12,13 @@
 #define MAX_HEIGHT_SIZE 16
 #define MAX_WIDTH_SIZE  30
 
+// cell status
 #define BOMB_MASK 15
 #define OPENED 16
 #define MARKED 32
 #define BOMB   64
 
+// command
 #define INIT 0
 #define IOPEN 1
 #define OPEN 2
@@ -26,6 +26,11 @@
 #define QUIT 4
 #define HELP 5
 #define NOP  6
+
+// difficulty
+#define EASY     1
+#define MEDIUM   2
+//#define ADVANCED 3
 
 struct command{
   int com;
@@ -108,15 +113,42 @@ int myrand(int n) {
   return x < 0 ? x + n : x;
 }
 
+unsigned int xor128(void) { 
+  static unsigned int x = 123456789;
+  static unsigned int y = 362436069;
+  static unsigned int z = 521288629;
+  static unsigned int w = 88675123; 
+  unsigned int t;
+ 
+  t = x ^ (x << 11);
+  x = y; y = z; z = w;
+  return w = (w ^ (w >> 19)) ^ (t ^ (t >> 8));
+}
+
 int isvalid(int x, int y){
   return 0 <= x && x < width && 0 <= y && y < height;
 }
 
-// set board size
-void init0(int h, int w, int b){
+// set board size by nums
+void init00(int h, int w, int b){
    height = h;
    width  = w;
    bomb   = b;
+}
+
+// set board size by macro
+void init0(int s){
+  switch(s){
+  case EASY:
+    init00(9, 9,10);
+    return;
+  case MEDIUM:
+    init00(16,16,40);
+    return;
+//  case ADVANCED:
+//    init00(30,16,99);
+//    return;
+  }  
 }
 
 // set number of bomb 0
@@ -141,8 +173,8 @@ void init2(int p, int q){
   if(height*width < bomb_number-1) return;
 
   while(bomb_number > 0){
-    x = myrand(10)%height;
-    y = myrand(10)%width;
+    x = xor128()%height;
+    y = xor128()%width;
 
     if(p-1 <= x && x <= p+1 && q-1 <= y && y <= q+1) continue;
     if(board[x][y] & BOMB) continue;
@@ -218,6 +250,7 @@ void getcom(struct command *com){
   switch(*c){
   case 'i':
     com->com = INIT;
+    com->x   = xint;
     return;
   case 'o':
     com->com = initialized == 1 ? IOPEN : OPEN;
@@ -279,6 +312,7 @@ void mine_mark(struct command *com){
 
 void mine_help(){
   printf(1, "commands:\n");
+  printf(1, "  i, init x (x = 1,2)\n");
   printf(1, "  o, open x y\n");
   printf(1, "  m, mark x y\n");
   printf(1, "  q, qiut    \n");
@@ -310,7 +344,7 @@ int main(){
   int exit_game;
   struct command com;
 
-  init0(9,9,10);
+  init0(EASY);
   init1();
 
   while(1){
@@ -328,7 +362,18 @@ int main(){
       printf(1,"command> ");
       getcom(&com);
     }
-    
+ 
+    if(com.com == INIT){
+      printf(1, "initinit!\n");
+      if(EASY <= com.x && com.x <= MEDIUM)
+        init0(com.x);
+      else 
+        init0(EASY);
+
+      init1();
+      continue;
+    }
+
     exit_game = action(&com);
 
     if(exit_game){
