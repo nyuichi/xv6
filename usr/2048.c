@@ -23,14 +23,6 @@ int myrand(int n) {
   x = lcg % n;
   return x < 0 ? x + n : x;
 }
-int getchar(void)
-{
-  char buf[1];
-
-  read(1, buf, 1);
-
-  return buf[0];
-}
 
 void print_int(int d)
 {

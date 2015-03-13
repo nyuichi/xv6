@@ -1,4 +1,3 @@
-
 #include <assert.h>
 #include <ctype.h>
 #include <limits.h>
@@ -77,46 +76,125 @@ void longjmp(jmp_buf buf, int val)
 
 /* stdio.h */
 
-static FILE stdin_entity  = { getchar, NULL };
-static FILE stdout_entity = { NULL, putchar };
 
-FILE *stdin  = &stdin_entity;
-FILE *stdout = &stdout_entity;
-FILE *stderr = &stdout_entity;
+FILE _iob[OPEN_MAX] = {     /* stdin, stdout, stderr */
+  { 0, (char *) 0, (char *) 0, _READ, 0 },
+  { 0, (char *) 0, (char *) 0, _WRITE, 1 },
+  { 0, (char *) 0, (char *) 0, _WRITE | _UNBUF, 2 }
+};
 
-int putchar(int c)
-{
-  write(1, &c, 1);
-}
+int _fillbuf(FILE *fp) {
+  int bufsize;
 
-int getchar(void)
-{
-  char c;
-  read(0, &c, 1);
-}
-
-int putc(int c, FILE *stream)
-{
-  return fputc(c, stream);
-}
-
-int fputc(int c, FILE *stream)
-{
-  if (! stream->write)
+  if ((fp->flag & (_READ | _EOF | _ERR)) != _READ)
     return EOF;
-  return stream->write(c);
-}
 
-int getc(FILE *stream)
-{
-  return fgetc(stream);
-}
+  bufsize = (fp->flag & _UNBUF) ? 1: BUFSIZ;
 
-int fgetc(FILE *stream)
-{
-  if (! stream->read)
+  if  (fp->base == NULL)  /* no buffer yet */
+    if ((fp->base = (char *) malloc(bufsize)) == NULL)
+      return EOF;         /* can't get buffer */
+
+  fp->ptr = fp->base;
+  fp->cnt = read(fp->fd, fp->ptr, bufsize);
+
+  if (--fp->cnt < 0) {
+    if (fp->cnt == -1)
+      fp->flag |= _EOF;
+    else
+      fp->flag |= _ERR;
+    fp->cnt = 0;
     return EOF;
-  return stream->read();
+  }
+
+  return (unsigned char) *fp->ptr++;
+}
+
+int _flushbuf(int x, FILE *fp) {
+
+  int num_written, bufsize;
+  unsigned char uc = x;
+
+  if ((fp->flag & (_WRITE|_EOF|_ERR)) != _WRITE)
+    return EOF;
+  if (fp->base == NULL && ((fp->flag & _UNBUF) == 0)) {
+    /* no buffer yet */
+    if ((fp->base = malloc(BUFSIZ)) == NULL) {
+      /* couldn't allocate a buffer, so try unbuffered */
+      fp->flag |= _UNBUF;
+    } else {
+      fp->ptr = fp->base;
+      fp->cnt = BUFSIZ - 1;
+    }
+  }
+  if (fp->flag & _UNBUF) {
+    /* unbuffered write */
+    fp->ptr = fp->base = NULL;
+    fp->cnt = 0;
+    if (x == EOF)
+      return EOF;
+    num_written = write(fp->fd, &uc, 1);
+    bufsize = 1;
+  } else {
+    /* buffered write */
+    if (x != EOF) {
+      *fp->ptr = uc;
+      ++fp->ptr;
+    }
+    bufsize = (int)(fp->ptr - fp->base);
+    num_written = write(fp->fd, fp->base, bufsize);
+    fp->ptr = fp->base;
+    fp->cnt = BUFSIZ - 1;
+  }
+  if (num_written == bufsize) {
+    return x;
+  } else {
+    fp->flag |= _ERR;
+    return EOF;
+  }
+}
+
+/* fflush */
+int fflush(FILE *f)
+{
+  int retval;
+  int i;
+
+  retval = 0;
+  if (f == NULL) {
+    /* flush all output streams */
+    for (i = 0; i < OPEN_MAX; i++) {
+      if ((_iob[i].flag & _WRITE) && (fflush(&_iob[i]) == -1))
+        retval = -1;
+    }
+  } else {
+    if ((f->flag & _WRITE) == 0)
+      return -1;
+    _flushbuf(EOF, f);
+    if (f->flag & _ERR)
+      retval = -1;
+  }
+  return retval;
+}
+
+
+int fputc(int x, FILE *fp)
+{
+  if (--fp->cnt >= 0) {
+    return *(fp)->ptr++ = x;
+  } else {
+    return _flushbuf(x, fp);
+  }
+}
+
+int fgetc(FILE *fp)
+{
+  fflush(NULL);
+  if (--fp->cnt >= 0) {
+    return (unsigned char) *(fp)->ptr++;
+  } else {
+    return _fillbuf(fp);
+  }
 }
 
 int fputs(char *s, FILE *stream)
@@ -160,6 +238,7 @@ char *fgets(char *s, int size, FILE *stream)
 {
   int c;
   char *buf;
+  fflush(NULL);
   buf = s;
 
   if (size == 0)
@@ -182,6 +261,7 @@ char *gets(char *s)
 {
   int c;
   char *buf;
+  fflush(NULL);
   buf = s;
 
   while ((c = getc(stdin)) != EOF && c != '\n') {
@@ -220,14 +300,14 @@ static int prints(FILE *fp, const char *str, int w, int prec, int flag)
 
   if (! (flag & LEFT))
     for (i = 0; i < w - len; ++i)
-      fp->write(' ');
+      putc(' ', fp);
 
   for (i = 0; i < len; ++i)
-    fp->write(str[i]);
+    putc(str[i], fp);
 
   if (flag & LEFT)
     for (i = 0; i < w - len; ++i)
-      fp->write(' ');
+      putc(' ', fp);
 
   return max(len, w);
 }
@@ -266,24 +346,24 @@ static int printi(FILE *fp, int x, int base, int w, int prec, int flag)
 
   if (! (flag & (LEFT | ZEROPAD)))
     for (i = 0; i < w - n; ++i)
-      fp->write(' ');
+      putc(' ', fp);
 
   for (i = 0; i < plen; ++i)
-    fp->write(pbuf[i]);
+    putc(pbuf[i], fp);
 
   if (flag & ZEROPAD)
     for (i = 0; i < w - n; ++i)
-      fp->write('0');
+      putc('0', fp);
 
   for (i = 0; i < prec - len; ++i)
-    fp->write('0');
+    putc('0', fp);
 
   for (i = len - 1; i >= 0; --i)
-    fp->write(buf[i]);
+    putc(buf[i], fp);
 
   if (flag & LEFT)
     for (i = 0; i < w - n; ++i)
-      fp->write(' ');
+      putc(' ', fp);
 
   return max(w, n);
 }
@@ -383,33 +463,33 @@ static int printef(FILE *fp, float f, int w, int prec, int flag)
 
   if (! (flag & (LEFT | ZEROPAD)))
     for (i = 0; i < w - n; ++i)
-      fp->write(' ');
+      putc(' ', fp);
 
   for (i = 0; i < plen; ++i)
-    fp->write(pbuf[i]);
+    putc(pbuf[i], fp);
 
   if (flag & ZEROPAD)
     for (i = 0; i < w - n; ++i)
-      fp->write('0');
+      putc('0', fp);
 
   for (i = 0; i < len; ++i)
-    fp->write(buf[i]);
+    putc(buf[i], fp);
 
   if (! (sp || flag & TRUNC))
     for (i = 0; i < prec - 8; ++i)
-      fp->write('0');
+      putc('0', fp);
 
   if (! sp) {
-    fp->write(flag & CAP ? 'E' : 'e');
-    fp->write(expo < 0 ? '-' : '+');
+    putc(flag & CAP ? 'E' : 'e', fp);
+    putc(expo < 0 ? '-' : '+', fp);
     if (expo < 0) expo = -expo;
-    fp->write(expo / 10 + '0');
-    fp->write(expo % 10 + '0');
+    putc(expo / 10 + '0', fp);
+    putc(expo % 10 + '0', fp);
   }
 
   if (flag & LEFT)
     for (i = 0; i < w - n; ++i)
-      fp->write(' ');
+      putc(' ', fp);
 
   return max(w, n);
 }
@@ -486,25 +566,25 @@ static int printff(FILE *fp, float f, int w, int prec, int flag)
 
   if (! (flag & (LEFT | ZEROPAD)))
     for (i = 0; i < w - n; ++i)
-      fp->write(' ');
+      putc(' ', fp);
 
   for (i = 0; i < plen; ++i)
-    fp->write(pbuf[i]);
+    putc(pbuf[i], fp);
 
   if (flag & ZEROPAD)
     for (i = 0; i < w - n; ++i)
-      fp->write('0');
+      putc('0', fp);
 
   for (i = 0; i < len; ++i)
-    fp->write(buf[i]);
+    putc(buf[i], fp);
 
   if (! (sp || flag & TRUNC))
     for (i = 0; i < prec - 9; ++i)
-      fp->write('0');
+      putc('0', fp);
 
   if (flag & LEFT)
     for (i = 0; i < w - n; ++i)
-      fp->write(' ');
+      putc(' ', fp);
 
   return max(w, n);
 }
@@ -549,12 +629,6 @@ int fprintf(FILE *fp, const char *fmt, ...)
   return vfprintf(fp, fmt, ap);
 }
 
-int sprintf(char *s, const char *fmt, ...)
-{
-  va_list ap;
-  va_start(ap, fmt);
-  return vsprintf(s, fmt, ap);
-}
 
 int vprintf(const char *fmt, va_list ap)
 {
@@ -565,7 +639,7 @@ int vfprintf(FILE *fp, const char *fmt, va_list ap)
 {
   int ret = 0;
 
-  if (! fp->write)
+  if (! (fp->flag & _WRITE))
     return -1;
 
   for (; *fmt; ++fmt) {
@@ -577,7 +651,7 @@ int vfprintf(FILE *fp, const char *fmt, va_list ap)
       const char *bak = fmt++;
       if (*fmt == '%') {
         ++ret;
-        fp->write('%');
+        putc('%', fp);
         continue;
       }
       while (strchr("-+ #0", *fmt)) {
@@ -614,7 +688,7 @@ int vfprintf(FILE *fp, const char *fmt, va_list ap)
       switch (*fmt) {
         case 'c':
           ++ret;
-          fp->write(va_arg(ap, int));
+          putc(va_arg(ap, int), fp);
           break;
         case 's':
           ret += prints(fp, va_arg(ap, char*), w, prec, flag);
@@ -662,27 +736,17 @@ int vfprintf(FILE *fp, const char *fmt, va_list ap)
         default:
           ret += fmt - bak;
           for (; bak < fmt; ++bak){
-            fp->write(*bak);
+            putc(*bak, fp);
           }
           --fmt;
           break;
       }
     } else {
       ++ret;
-      fp->write(*fmt);
+      putc(*fmt, fp);
     }
   }
 
-  return ret;
-}
-
-int vsprintf(char *s, const char *fmt, va_list ap)
-{
-  int ret;
-  FILE stream = { NULL, write_string };
-  write_string_dst = s;
-  ret = vfprintf(&stream, fmt, ap);
-  *write_string_dst = '\0';
   return ret;
 }
 
