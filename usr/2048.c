@@ -29,27 +29,72 @@ void print_int(int d)
   printf("%4d", d);
 }
 
+void changeColor(int b){
+  if(b==0){
+    printf("\033[0m");
+  } else {
+    switch((b-1)%6){
+    case 0:
+      printf("\033[1;43m");
+      break;
+    case 1:
+      printf("\033[1;42m");
+      break;
+    case 2:
+      printf("\033[1;46m");
+      break;
+    case 3:
+      printf("\033[1;44m");
+      break;
+    case 4:
+      printf("\033[1;45m");
+      break;
+    case 5:
+      printf("\033[1;41m");
+      break;
+    }
+  }
+}
+
+void resetColor(){
+  changeColor(0);
+}
+
 void showBoard(){
-  int i,j;
+  int i,j,b;
+  // clear screen
   printf("\033[2J");
   printf("\033[1;1H");
+  // draw
   for(i=0; i<4; i++){
     printf("+------+------+------+------+\n");
-    printf("|      |      |      |      |\n");
-    printf("| ");
     for(j=0; j<4; j++){
-      if(board[i][j] != 0) {
-        print_int(1 << board[i][j]);
-        printf(" | ");
-      } else {
-        printf("     | ");
-      }
-    }
-    printf("\n");
-    printf("|      |      |      |      |\n");
+      printf("|");
+      changeColor(board[i][j]);
+      printf("      ");
+      resetColor();
+    } printf("|\n");
+    for(j=0; j<4; j++){
+      printf("|");
+      b = board[i][j];
+      changeColor(b);
+      if(b != 0)
+        printf(" %4d ", 1 << b);
+      else
+        printf("      ");
+      resetColor();
+    } printf("|\n");
+    for(j=0; j<4; j++){
+      printf("|");
+      changeColor(board[i][j]);
+      printf("      ");
+      resetColor();
+    } printf("|\n");
   }
+
   printf("+------+------+------+------+\n");
 }
+
 
 bool isValid(int x, int y){
   if(x < 0 || 4 <= x)
