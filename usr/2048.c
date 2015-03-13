@@ -1,5 +1,6 @@
-#include <sys/types.h>
-#include <xv6/user.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define true  1
 #define false 0
@@ -33,37 +34,29 @@ int getchar(void)
 
 void print_int(int d)
 {
-  if (d < 10) {
-    printf(1, "   %d", d);
-  } else if (d < 100) {
-    printf(1, "  %d", d);
-  } else if (d < 1000) {
-    printf(1, " %d", d);
-  } else {
-    printf(1, "%d", d);
-  }
+  printf("%4d", d);
 }
 
 void showBoard(){
   int i,j;
-  printf(1, "\033[2J");
-  printf(1, "\033[1;1H");
+  printf("\033[2J");
+  printf("\033[1;1H");
   for(i=0; i<4; i++){
-    printf(1, "+------+------+------+------+\n");
-    printf(1, "|      |      |      |      |\n");
-    printf(1, "| ");
+    printf("+------+------+------+------+\n");
+    printf("|      |      |      |      |\n");
+    printf("| ");
     for(j=0; j<4; j++){
       if(board[i][j] != 0) {
         print_int(1 << board[i][j]);
-        printf(1, " | ");
+        printf(" | ");
       } else {
-        printf(1, "     | ");
+        printf("     | ");
       }
     }
-    printf(1, "\n");
-    printf(1, "|      |      |      |      |\n");
+    printf("\n");
+    printf("|      |      |      |      |\n");
   }
-  printf(1, "+------+------+------+------+\n");
+  printf("+------+------+------+------+\n");
 }
 
 bool isValid(int x, int y){
@@ -131,7 +124,7 @@ void init(){
 
   putNum();
 
-  printf(1, "\033[2J");
+  printf("\033[2J");
 }
 
 int c2dir(char c){
@@ -241,14 +234,14 @@ int main(){
 
   do{
     showBoard();
-    printf(1, "score: %d\n", score);
-    printf(1, "(enter \'q\' to exit...)\n", score);
-    printf(1, "> ");
+    printf("score: %d\n", score);
+    printf("(enter \'q\' to exit...)\n");
+    printf("> ");
     do{
       char c;
       c = getchar();
       if (c == 'q')
-        exit();
+        exit(0);
       d = c2dir(c);
     } while(d==-1 || !movable(d));
     Move(d);
@@ -256,8 +249,8 @@ int main(){
   } while(!gameover());
 
   showBoard();
-  printf(1, "gameover...\n");
-  printf(1, "your score is: %d\n\n", score);
+  printf("gameover...\n");
+  printf("your score is: %d\n\n", score);
 
   return 0;
 }

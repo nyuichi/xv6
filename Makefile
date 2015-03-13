@@ -98,7 +98,11 @@ _forktest: usr/_forktest.s $(ULIB)
 _sl: lib/_curses.s $(ULIB) usr/_sl.s
 	$(AS) $(ASFLAGS) -e 0 -o $@ usr/_sl.s lib/_curses.s $(ULIB) $(UCCLIBS) -f __UCC_HEAP_START
 
-mkfs: tools/mkfs.c 
+# use libc from ucc
+_2048: $(LIBC) usr/_2048.s
+	$(AS) $(ASFLAGS) -e 0 -o $@ usr/_2048.s lib/_curses.s $(LIBC) $(UCCLIBS) -f __UCC_HEAP_START
+
+mkfs: tools/mkfs.c
 	gcc -Werror -Wall -o mkfs tools/mkfs.c -idirafter ./include -idirafter . -g
 
 # Prevent deletion of intermediate files, e.g. cat.o, after first build, so
