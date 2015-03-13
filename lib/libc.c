@@ -951,6 +951,17 @@ int strcmp(const char *l, const char *r)
   return *r ? -1 : 0;
 }
 
+int strncmp(const char *l, const char *r, size_t n)
+{
+  while (*l && 0 < n) {
+    if (*l++ != *r++) {
+      return l[-1] < r[-1] ? -1 : 1;
+    }
+    --n;
+  }
+  return 0;
+}
+
 char *strchr(const char *str, int c)
 {
   do {
@@ -966,6 +977,14 @@ char *strcpy(char *dst, const char *src)
   char *d = dst;
 
   while (*d++ = *src++);
+  return dst;
+}
+
+char *strncpy(char *dst, const char *src, size_t n)
+{
+  char *d = dst;
+
+  while (n-- > 0 && (*d++ = *src++));
   return dst;
 }
 
