@@ -1,5 +1,5 @@
-#include <sys/types.h>
-#include <xv6/user.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <curses.h>
 #include "sl.h"
 
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
   }
 
   endwin();
-  exit();
+  exit(0);
 }
 
 

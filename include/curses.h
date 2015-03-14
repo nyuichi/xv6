@@ -1,3 +1,8 @@
+#ifndef _CURSES_H
+#define _CURSES_H
+
+#include <stdio.h>
+
 #define OK  0
 #define ERR 1
 
@@ -24,3 +29,5 @@ int addstr(char*);             // print string @culsol
 int mvaddch(int, int, char);   // move & addch
 int mvaddstr(int, int, char*); // move & addstr
 int refresh();                 // refresh screen
+
+#endif /* curses.h */

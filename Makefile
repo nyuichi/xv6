@@ -96,7 +96,7 @@ _forktest: usr/_forktest.s $(ULIB)
 	$(AS) $(ASFLAGS) -e 0 -o $@ usr/_forktest.s lib/_ulib.s lib/_usys.s $(UCCLIBS) -f __UCC_HEAP_START
 
 _sl: lib/_curses.s $(ULIB) usr/_sl.s
-	$(AS) $(ASFLAGS) -e 0 -o $@ usr/_sl.s lib/_curses.s $(ULIB) $(UCCLIBS) -f __UCC_HEAP_START
+	$(AS) $(ASFLAGS) -e 0 -o $@ usr/_sl.s lib/_curses.s $(LIBC) $(UCCLIBS) -f __UCC_HEAP_START
 
 # use libc from ucc
 _2048: $(LIBC) usr/_2048.s
