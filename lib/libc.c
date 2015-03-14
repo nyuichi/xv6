@@ -112,7 +112,7 @@ int _fillbuf(FILE *fp) {
 
 int _flushbuf(int x, FILE *fp) {
 
-  int num_written, bufsize;
+  int num_written=0, bufsize=0;
   unsigned char uc = x;
 
   if ((fp->flag & (_WRITE|_EOF|_ERR)) != _WRITE)
@@ -137,15 +137,21 @@ int _flushbuf(int x, FILE *fp) {
     bufsize = 1;
   } else {
     /* buffered write */
+    assert(fp->ptr);
     if (x != EOF) {
-      *fp->ptr = uc;
-      ++fp->ptr;
+      *fp->ptr++ = uc;
     }
     bufsize = (int)(fp->ptr - fp->base);
-    num_written = write(fp->fd, fp->base, bufsize);
+    while(bufsize - num_written > 0) {
+      int t;
+      t = write(fp->fd, fp->base + num_written, bufsize - num_written);
+      num_written += t;
+    }
+
     fp->ptr = fp->base;
     fp->cnt = BUFSIZ - 1;
   }
+
   if (num_written == bufsize) {
     return x;
   } else {
