@@ -10,7 +10,7 @@
 
 #define NULL 0
 #define EOF (-1)
-#define BUFSIZ 256
+#define BUFSIZ 1024
 #define OPEN_MAX 10
 
 typedef struct _iobuf {
