@@ -119,6 +119,7 @@ UPROGS=\
 	_2048\
 	_minesweeper\
 	_pwd\
+	_vi\
 # remove this to save file system size.
 #_forktest\
 #_stressfs\
