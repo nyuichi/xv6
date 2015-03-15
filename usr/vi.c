@@ -122,10 +122,13 @@ void cursor_init(struct linebuffer *lbp){
   cursor.linebuffer = lbp;
 }
 void terminal_cursor_update(){
-  if(command)
+  if(command){
     term_cursor_location(STATUSBAR_MESSAGE_START+statusbar.msglength, SCREEN_HEIGHT+1);
-  else
-    term_cursor_location(cursor.x, cursor.y-screen.line+1);  
+    fflush(stdout);
+  }else{
+    term_cursor_location(cursor.x, cursor.y-screen.line+1);
+    fflush(stdout);
+  }
 }
 void cursor_up(){
   if(cursor.linebuffer->prev == &linebuffer_head)
