@@ -335,6 +335,11 @@ void deleteline_normal(){
 
   free(cursor.linebuffer->buf);
   free(cursor.linebuffer);
+  
+  if(n != &linebuffer_tail)
+    cursor.linebuffer = n;
+  else
+    cursor.linebuffer = p;
 }
 
 void save(){
