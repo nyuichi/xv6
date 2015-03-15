@@ -1,11 +1,14 @@
 /*
  * [TODO]
  *  : no return key wait
+ *  : delete line bug ?
  *
  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 // screen
 //  statusbar is append after SCREEN_HEIGHT screen
@@ -335,7 +338,20 @@ void deleteline_normal(){
 }
 
 void save(){
+  int fd, n;
+  struct linebuffer *lbp;
+
+  fd = open(outputfilename, O_CREATE | O_RDWR);
+
+  lbp = linebuffer_head.next;
+  while(lbp != &linebuffer_tail){
+    write(fd, lbp->buf, lbp->size+1);
+    lbp = lbp->next;  
+  }
+  close(fd);
+
   /*
+  // code for gcc
   FILE *ofile;
   struct linebuffer *lbp;
 
@@ -547,5 +563,5 @@ int main(){
 
   cleanup();
 
-  return 0;  
+  exit(0);  
 }
