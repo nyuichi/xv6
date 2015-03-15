@@ -1,5 +1,6 @@
-#include <sys/types.h>
-#include <xv6/user.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define true  1
 #define false 0
@@ -22,49 +23,78 @@ int myrand(int n) {
   x = lcg % n;
   return x < 0 ? x + n : x;
 }
-int getchar(void)
-{
-  char buf[1];
-
-  read(1, buf, 1);
-
-  return buf[0];
-}
 
 void print_int(int d)
 {
-  if (d < 10) {
-    printf(1, "   %d", d);
-  } else if (d < 100) {
-    printf(1, "  %d", d);
-  } else if (d < 1000) {
-    printf(1, " %d", d);
+  printf("%4d", d);
+}
+
+void changeColor(int b){
+  if(b==0){
+    printf("\033[0m");
   } else {
-    printf(1, "%d", d);
+    switch((b-1)%6){
+    case 0:
+      printf("\033[1;43m");
+      break;
+    case 1:
+      printf("\033[1;42m");
+      break;
+    case 2:
+      printf("\033[1;46m");
+      break;
+    case 3:
+      printf("\033[1;44m");
+      break;
+    case 4:
+      printf("\033[1;45m");
+      break;
+    case 5:
+      printf("\033[1;41m");
+      break;
+    }
   }
 }
 
-void showBoard(){
-  int i,j;
-  printf(1, "\033[2J");
-  printf(1, "\033[1;1H");
-  for(i=0; i<4; i++){
-    printf(1, "+------+------+------+------+\n");
-    printf(1, "|      |      |      |      |\n");
-    printf(1, "| ");
-    for(j=0; j<4; j++){
-      if(board[i][j] != 0) {
-        print_int(1 << board[i][j]);
-        printf(1, " | ");
-      } else {
-        printf(1, "     | ");
-      }
-    }
-    printf(1, "\n");
-    printf(1, "|      |      |      |      |\n");
-  }
-  printf(1, "+------+------+------+------+\n");
+void resetColor(){
+  changeColor(0);
 }
+
+void showBoard(){
+  int i,j,b;
+  // clear screen
+  printf("\033[2J");
+  printf("\033[1;1H");
+  // draw
+  for(i=0; i<4; i++){
+    printf("+------+------+------+------+\n");
+    for(j=0; j<4; j++){
+      printf("|");
+      changeColor(board[i][j]);
+      printf("      ");
+      resetColor();
+    } printf("|\n");
+    for(j=0; j<4; j++){
+      printf("|");
+      b = board[i][j];
+      changeColor(b);
+      if(b != 0)
+        printf(" %4d ", 1 << b);
+      else
+        printf("      ");
+      resetColor();
+    } printf("|\n");
+    for(j=0; j<4; j++){
+      printf("|");
+      changeColor(board[i][j]);
+      printf("      ");
+      resetColor();
+    } printf("|\n");
+  }
+
+  printf("+------+------+------+------+\n");
+}
+
 
 bool isValid(int x, int y){
   if(x < 0 || 4 <= x)
@@ -131,7 +161,7 @@ void init(){
 
   putNum();
 
-  printf(1, "\033[2J");
+  printf("\033[2J");
 }
 
 int c2dir(char c){
@@ -241,14 +271,15 @@ int main(){
 
   do{
     showBoard();
-    printf(1, "score: %d\n", score);
-    printf(1, "(enter \'q\' to exit...)\n", score);
-    printf(1, "> ");
+    printf("score: %d\n", score);
+    printf("(enter \'q\' to exit...)\n");
+    printf("> ");
+    fflush(stdout);
     do{
       char c;
       c = getchar();
       if (c == 'q')
-        exit();
+        exit(0);
       d = c2dir(c);
     } while(d==-1 || !movable(d));
     Move(d);
@@ -256,8 +287,8 @@ int main(){
   } while(!gameover());
 
   showBoard();
-  printf(1, "gameover...\n");
-  printf(1, "your score is: %d\n\n", score);
+  printf("gameover...\n");
+  printf("your score is: %d\n\n", score);
 
-  return 0;
+  exit(0);
 }

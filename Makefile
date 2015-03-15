@@ -1,5 +1,5 @@
 ASMS = \
-        _entryasm.s\
+	        _entryasm.s\
 	_entry.s\
 	_bio.s\
 	_console.s\
@@ -73,7 +73,7 @@ kernelmemfs: $(MEMFSASMS) initcode fs.img
 tags: $(ASMS) _init
 	etags *.S *.c
 
-ULIB = lib/_ulib.s lib/_usys.s lib/_printf.s lib/_umalloc.s
+LIBC = lib/_libc.s lib/_usys.s
 
 _%.s: %.S
 	$(NATIVECC) $(NATIVECFLAGS) -E -I. -o $@ $<
@@ -85,16 +85,14 @@ lib/_usys.s: lib/usys.S
 	$(NATIVECC) $(NATIVECFLAGS) -E -I. -o $@ $<
 	sed -i "s/;/\n/g" $@
 
-_%: _%.s $(ULIB)
-	$(AS) $(ASFLAGS) -e 0 -o $@ $^ $(UCCLIBS) -f __UCC_HEAP_START
-
-_forktest: usr/_forktest.s $(ULIB)
-	$(AS) $(ASFLAGS) -e 0 -o $@ usr/_forktest.s lib/_ulib.s lib/_usys.s $(UCCLIBS) -f __UCC_HEAP_START
+_%: _%.s $(LIBC)
+	$(AS) $(ASFLAGS) -e 0 -o $@ $< $(LIBC) $(UCCLIBS) -f __UCC_HEAP_START
 
 _sl: lib/_curses.s $(ULIB) usr/_sl.s
-	$(AS) $(ASFLAGS) -e 0 -o $@ usr/_sl.s lib/_curses.s $(ULIB) $(UCCLIBS) -f __UCC_HEAP_START
+	$(AS) $(ASFLAGS) -e 0 -o $@ usr/_sl.s lib/_curses.s $(LIBC) $(UCCLIBS) -f __UCC_HEAP_START
 
-mkfs: tools/mkfs.c 
+
+mkfs: tools/mkfs.c
 	gcc -Werror -Wall -o mkfs tools/mkfs.c -idirafter ./include -idirafter . -g
 
 # Prevent deletion of intermediate files, e.g. cat.o, after first build, so
@@ -106,7 +104,6 @@ mkfs: tools/mkfs.c
 UPROGS=\
 	_cat\
 	_echo\
-	_forktest\
 	_grep\
 	_init\
 	_kill\
@@ -115,16 +112,18 @@ UPROGS=\
 	_mkdir\
 	_rm\
 	_sh\
-	_stressfs\
 	_wc\
-	_zombie\
 	_sl\
 	_sed\
 	_halt\
 	_2048\
-        _minesweeper\
+	_minesweeper\
 	_pwd\
-	#_usertests\ # remove this to save file system size.
+# remove this to save file system size.
+#_forktest\
+#_stressfs\
+#_zombie\
+#_usertests\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)

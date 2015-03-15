@@ -1,5 +1,3 @@
-#include <sys/types.h>
-#include <xv6/user.h>
 #include <curses.h>
 
 // screen buffer
@@ -19,17 +17,19 @@ void initscr(){
 void curs_set(int a){
   switch(a){
   case 0: //
-    printf(1, "\033[?25l");
+    printf("\033[?25l");
     break;
   case 1: // default
-    printf(1, "\033[?25h");
+    printf("\033[?25h");
     break;
   }
+  fflush(stdout);
 }
 
 void endwin(){
   curs_set(1);
-  printf(1, "\n");
+  printf("\n");
+  fflush(stdout);
 }
 
 // outputs
@@ -43,7 +43,8 @@ int clear(){
 
 int erase(){
   int i,j;
-  printf(1, "\033[2J"); // clear screen
+  printf("\033[2J"); // clear screen
+  fflush(stdout);
   for(i=0; i<LINES; ++i){
     for(j=0; j<COLS; ++j){
       screen[i][j].letter = ' ';
@@ -110,8 +111,9 @@ int mvaddstr(int y, int x, char*str){
 
 int refresh(){
   int i,j;
-  char buf[LINES*(COLS+1)] = {0};
-  printf(1, "\033[H"); // move cursol to top left
+  char buf[LINES*(COLS+1)];
+  printf("\033[H"); // move cursol to top left
+  fflush(stdout);
   for(i=0; i<LINES; ++i){
     for(j=0; j<COLS; ++j){
       buf[i*(COLS+1) + j] = screen[i][j].letter;
@@ -120,6 +122,7 @@ int refresh(){
       buf[(i+1)*(COLS+1) -1] = '\n';
   }
   buf[LINES * (COLS+1) -1] = '\0';
-  printf(1, "%s", buf);
+  printf("%s", buf);
+  fflush(stdout);
   return OK;
 }

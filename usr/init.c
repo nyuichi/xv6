@@ -1,9 +1,9 @@
 // init: The initial user-level program
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <xv6/user.h>
-#include <sys/fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 char *argv[] = { "sh", 0 };
 
@@ -20,18 +20,18 @@ main(void)
   dup(0);  // stderr
 
   for(;;){
-    printf(1, "init: starting sh\n");
+    printf("init: starting sh\n");
     pid = fork();
     if(pid < 0){
-      printf(1, "init: fork failed\n");
-      exit();
+      fprintf(stderr, "init: fork failed\n");
+      exit(1);
     }
     if(pid == 0){
       exec("sh", argv);
-      printf(1, "init: exec sh failed\n");
-      exit();
+      fprintf(stderr, "init: exec sh failed\n");
+      exit(1);
     }
     while((wpid=wait()) >= 0 && wpid != pid)
-      printf(1, "zombie!\n");
+      printf("zombie!\n");
   }
 }

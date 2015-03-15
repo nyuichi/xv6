@@ -1,8 +1,10 @@
 // Simple grep.  Only supports ^ . * $ operators.
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <xv6/user.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <string.h>
+#include <unistd.h>
 
 char buf[1024];
 int match(char*, char*);
@@ -12,9 +14,9 @@ grep(char *pattern, int fd)
 {
   int n, m;
   char *p, *q;
-  
   m = 0;
-  while((n = read(fd, buf+m, sizeof(buf)-m)) > 0){
+  while((n = read(fd, buf+m, sizeof(buf)-m-1)) > 0){
+    buf[m + n] = 0; // this is very very important expression
     m += n;
     p = buf;
     while((q = strchr(p, '\n')) != 0){
@@ -39,27 +41,27 @@ main(int argc, char *argv[])
 {
   int fd, i;
   char *pattern;
-  
+
   if(argc <= 1){
-    printf(2, "usage: grep pattern [file ...]\n");
-    exit();
+    fprintf(stderr, "usage: grep pattern [file ...]\n");
+    exit(1);
   }
   pattern = argv[1];
-  
+
   if(argc <= 2){
     grep(pattern, 0);
-    exit();
+    exit(0);
   }
 
   for(i = 2; i < argc; i++){
     if((fd = open(argv[i], 0)) < 0){
-      printf(1, "grep: cannot open %s\n", argv[i]);
-      exit();
+      fprintf(stderr, "grep: cannot open %s\n", argv[i]);
+      exit(1);
     }
     grep(pattern, fd);
     close(fd);
   }
-  exit();
+  exit(0);
 }
 
 // Regexp matcher from Kernighan & Pike,
@@ -103,4 +105,3 @@ int matchstar(int c, char *re, char *text)
   }while(*text!='\0' && (*text++==c || c=='.'));
   return 0;
 }
-

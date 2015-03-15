@@ -1,56 +1,51 @@
 // Test that fork fails gracefully.
 // Tiny executable so that the limit can be filling the proc table.
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <xv6/user.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #define N  1000
-
-void
-printf(int fd, char *s, ...)
-{
-  write(fd, s, strlen(s));
-}
 
 void
 forktest(void)
 {
   int n, pid;
 
-  printf(1, "fork test\n");
+  printf("fork test\n");
 
   for(n=0; n<N; n++){
     pid = fork();
     if(pid < 0)
       break;
     if(pid == 0)
-      exit();
+      exit(0);
   }
-  
+
   if(n == N){
-    printf(1, "fork claimed to work N times!\n", N);
-    exit();
+    printf("fork claimed to work N times!\n", N);
+    exit(0);
   }
-  
+
   for(; n > 0; n--){
     if(wait() < 0){
-      printf(1, "wait stopped early\n");
-      exit();
+      printf("wait stopped early\n");
+      exit(0);
     }
   }
-  
+
   if(wait() != -1){
-    printf(1, "wait got too many\n");
-    exit();
+    printf("wait got too many\n");
+    exit(0);
   }
-  
-  printf(1, "fork test OK\n");
+
+  printf("fork test OK\n");
 }
 
 int
 main(void)
 {
   forktest();
-  exit();
+  exit(0);
 }

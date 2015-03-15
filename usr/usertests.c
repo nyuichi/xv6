@@ -3,7 +3,7 @@
 #include <sys/stat.h>
 #include <xv6/user.h>
 #include <xv6/fs.h>
-#include <sys/fcntl.h>
+#include <fcntl.h>
 #include <sys/syscall.h>
 #include "traps.h"
 #include "memlayout.h"

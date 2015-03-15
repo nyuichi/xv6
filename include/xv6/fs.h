@@ -7,6 +7,8 @@
 // Then free bitmap blocks holding sb.size bits.
 // Then sb.nblocks data blocks.
 // Then sb.nlog log blocks.
+#ifndef _XV6_FS_H
+#define _XV6_FS_H
 
 #define ROOTINO 1  // root i-number
 #define BSIZE 512  // block size
@@ -56,3 +58,5 @@ struct dirent {
 };
 
 #define XDIRSIZE      (2 + (DIRSIZ))
+
+#endif
