@@ -319,6 +319,8 @@ void mode_change(int m){
 }
 
 void delete_normal(){
+  if(*(cursor.linebuffer->buf+cursor.x) == '\n') 
+    return;
   memmove(cursor.linebuffer->buf+cursor.x, cursor.linebuffer->buf+(cursor.x+1), cursor.linebuffer->size-cursor.x);
   cursor.linebuffer->buf[cursor.linebuffer->size] = '\0';
 
