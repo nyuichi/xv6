@@ -6,8 +6,6 @@
 #define O_RDWR    0x002
 #define O_CREATE  0x200
 
-#ifndef _XV6_USER_H
 int open(const char *, int);
-#endif
 
 #endif
