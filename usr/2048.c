@@ -274,6 +274,7 @@ int main(){
     printf("score: %d\n", score);
     printf("(enter \'q\' to exit...)\n");
     printf("> ");
+    fflush(stdout);
     do{
       char c;
       c = getchar();
@@ -289,5 +290,5 @@ int main(){
   printf("gameover...\n");
   printf("your score is: %d\n\n", score);
 
-  return 0;
+  exit(0);
 }

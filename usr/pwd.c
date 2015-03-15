@@ -1,8 +1,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/fcntl.h>
-#include <xv6/user.h>
 #include <xv6/fs.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 int
 inum(char *path)
@@ -12,8 +15,8 @@ inum(char *path)
 
   fd = open(path, O_RDONLY);
   if(fstat(fd, &st) < 0){
-    printf(2, "pwd: cannot stat %s\n", path);
-    exit();
+    fprintf(stderr, "pwd: cannot stat %s\n", path);
+    exit(1);
   }
   close(fd);
   return st.ino;
@@ -60,7 +63,7 @@ main(int argc, char *argv[])
   if(res[0] == '\0'){
     strprepend(res, "/", sizeof(res));
   }
-  printf(0, "%s\n", res);
+  printf("%s\n", res);
 
-  exit();
+  exit(0);
 }

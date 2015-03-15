@@ -32,7 +32,8 @@ enum _flags {
   _WRITE = 02,
   _UNBUF = 04,
   _EOF   = 010,
-  _ERR   = 020
+  _ERR   = 020,
+  _LNBUF = 040
 };
 
 int _fillbuf(FILE *);
@@ -43,13 +44,20 @@ int fflush(FILE *);
 #define ferror(p)   (((p)->flag & _ERR) != 0)
 #define fileno(p)   ((p)->fd)
 
-#define getc(p) (fflush(NULL),                                \
-                 --(p)->cnt >= 0                              \
-                 ? (unsigned char) *(p)->ptr++ : _fillbuf(p))
+#if 0
+#define getc(p)                                     \
+  ((--(p)->cnt >= 0)                                \
+   ? (unsigned char) *(p)->ptr++                    \
+   : _fillbuf(p))
 
-#define putc(x, p) (--(p)->cnt >= 0 \
-                ? *(p)->ptr++ = (x) : _flushbuf((x), p))
+#define putc(x, p)                                            \
+  ((--(p)->cnt >= 0 && (((p)->flag & _LNBUF) && (x) == '\n')) \
+   ? *(p)->ptr++ = (x)                                        \
+   : _flushbuf((x), (p)))
+#endif
 
+#define getc(p) fgetc(p)
+#define putc(x, p) fputc(x, p)
 #define getchar()   getc(stdin)
 #define putchar(x)  putc((x), stdout)
 

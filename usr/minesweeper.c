@@ -4,8 +4,8 @@
  *  : invalid command when reading "o 2"
  */
 
-#include <sys/types.h>
-#include <xv6/user.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define MINESWEEPER_DEBUG 0
 
@@ -46,7 +46,7 @@ char buf[128];
 
 char displayed[] = {
   // init, open, mark, bomb
-     ' ',  '+',  'x',  'b' 
+     ' ',  '+',  'x',  'b'
 };
 
 int board2disp(int i, int j){
@@ -58,37 +58,37 @@ int board2disp(int i, int j){
 
 void print_2d(int n){
   if(n < 10){
-    printf(1, " %d", n);  
+    printf(" %d", n);
   }else{
-    printf(1, "%d", n);  
+    printf("%d", n);
   }
 }
 
 void showboard(){
   int i,j;
 
-  printf(1,"\033[2J");
-  printf(1,"\033[1;1H");
-  printf(1,"   ||");
+  printf("\033[2J");
+  printf("\033[1;1H");
+  printf("   ||");
   for(i=0; i<width; i++){
     print_2d(i);
-    printf(1, " |");
+    printf(" |");
   }
-  printf(1,"\n---++");
+  printf("\n---++");
   for(i=0; i<width; i++){
-    printf(1,"---+", i);  
+    printf("---+", i);
   }
-  printf(1,"\n");
+  printf("\n");
   for(i=0; i<width; i++){
     print_2d(i);
-    printf(1, " || ");
+    printf(" || ");
     for(j=0; j<height; j++){
       if(board2disp(i,j) == 1)
-        printf(1,"%d | ", board[i][j] & BOMB_MASK);
+        printf("%d | ", board[i][j] & BOMB_MASK);
       else
-        printf(1,"%c | ", displayed[board2disp(i,j)]);
+        printf("%c | ", displayed[board2disp(i,j)]);
     }
-    printf(1,"\n");
+    printf("\n");
   }
 }
 
@@ -98,9 +98,9 @@ void dumpboard(){
   for(i=0; i<width; i++){
     for(j=0; j<height; j++){
       print_2d(board[i][j]);
-      printf(1, " ");
-    } 
-    printf(1,"\n");
+      printf(" ");
+    }
+    printf("\n");
   }
 }
 #endif
@@ -113,13 +113,13 @@ int myrand(int n) {
   return x < 0 ? x + n : x;
 }
 
-unsigned int xor128(void) { 
+unsigned int xor128(void) {
   static unsigned int x = 123456789;
   static unsigned int y = 362436069;
   static unsigned int z = 521288629;
-  static unsigned int w = 88675123; 
+  static unsigned int w = 88675123;
   unsigned int t;
- 
+
   t = x ^ (x << 11);
   x = y; y = z; z = w;
   return w = (w ^ (w >> 19)) ^ (t ^ (t >> 8));
@@ -148,7 +148,7 @@ void init0(int s){
 //  case ADVANCED:
 //    init00(30,16,99);
 //    return;
-  }  
+  }
 }
 
 // set number of bomb 0
@@ -156,8 +156,8 @@ void init1(){
   int i,j;
   for(i=0; i<width; i++){
     for(j=0; j<height; j++){
-      board[i][j] = 0;  
-    }  
+      board[i][j] = 0;
+    }
   }
   initialized = 1;
 }
@@ -178,7 +178,7 @@ void init2(int p, int q){
 
     if(p-1 <= x && x <= p+1 && q-1 <= y && y <= q+1) continue;
     if(board[x][y] & BOMB) continue;
-    
+
     board[x][y] = BOMB;
     bomb_number--;
 
@@ -189,9 +189,9 @@ void init2(int p, int q){
         if(isvalid(x+drc[i], y+drc[j])){
           bnum = board[x+drc[i]][y+drc[j]] & BOMB_MASK;
           bnum++;
-          board[x+drc[i]][y+drc[j]] = (board[x+drc[i]][y+drc[j]] & ~BOMB_MASK) | bnum; 
+          board[x+drc[i]][y+drc[j]] = (board[x+drc[i]][y+drc[j]] & ~BOMB_MASK) | bnum;
         }
-      }  
+      }
     }
   }
 }
@@ -204,7 +204,7 @@ int isclear(){
       if(!(board[i][j] & BOMB) && !(board[i][j] & OPENED)){
         return 0;
       }
-    }  
+    }
   }
   return 1;
 }
@@ -215,9 +215,9 @@ int isgameover(){
   for(i=0; i<width; i++){
     for(j=0; j<height; j++){
       if((board[i][j] & BOMB) && (board[i][j] & OPENED)){
-        return 1;  
-      }  
-    }  
+        return 1;
+      }
+    }
   }
   return 0;
 }
@@ -226,7 +226,7 @@ void getcom(struct command *com){
   char *c, *x, *y;
   int xint, yint;
 
-  gets(buf, sizeof(buf));
+  fgets(buf, sizeof(buf), stdin);
 
   c = buf;
   while(*c == ' ' && *c != '\0') c++;
@@ -286,7 +286,7 @@ void mine_open(struct command *com){
 
   if(!(board[x][y] & (OPENED | MARKED)))
     board[x][y] |= OPENED;
-  else 
+  else
     return;
 
   if((board[x][y] & BOMB_MASK) == 0){
@@ -311,11 +311,11 @@ void mine_mark(struct command *com){
 }
 
 void mine_help(){
-  printf(1, "commands:\n");
-  printf(1, "  i, init x (x = 1,2)\n");
-  printf(1, "  o, open x y\n");
-  printf(1, "  m, mark x y\n");
-  printf(1, "  q, quit    \n");
+  printf("commands:\n");
+  printf("  i, init x (x = 1,2)\n");
+  printf("  o, open x y\n");
+  printf("  m, mark x y\n");
+  printf("  q, quit    \n");
 }
 
 int action(struct command *com){
@@ -335,7 +335,7 @@ int action(struct command *com){
     mine_mark(com);
     return 0;
   default:
-    printf(1,"program mistake: unknown action\n");
+    printf("program mistake: unknown action\n");
     return 1;
   }
 }
@@ -352,22 +352,22 @@ int main(){
 #if MINESWEEPER_DEBUG == 1
     dumpboard();
 #endif
-    
-    printf(1,"type 'help' to see available commands\n");
+
+    printf("type 'help' to see available commands\n");
     com.com = NOP;
     while(com.com == NOP || com.com == HELP){
       if(com.com == HELP)
         mine_help();
 
-      printf(1,"command> ");
+      printf("command> ");
       getcom(&com);
     }
- 
+
     if(com.com == INIT){
-      printf(1, "initinit!\n");
+      printf("initinit!\n");
       if(EASY <= com.x && com.x <= MEDIUM)
         init0(com.x);
-      else 
+      else
         init0(EASY);
 
       init1();
@@ -378,20 +378,20 @@ int main(){
 
     if(exit_game){
       showboard();
-      printf(1,"exit minesweeper\n");
+      printf("exit minesweeper\n");
       break;
     }
     if(isgameover()){
       showboard();
-      printf(1,"gameover...\n");
+      printf("gameover...\n");
       break;
     }
     if(isclear()){
       showboard();
-      printf(1,"clear!\n");
+      printf("clear!\n");
       break;
     }
   }
 
-  exit();
+  exit(0);
 }

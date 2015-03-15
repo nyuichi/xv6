@@ -15,5 +15,6 @@ void *realloc(void *, size_t);
 void *calloc(size_t, size_t);
 void free(void *);
 void exit(int);
+int atoi(const char*);
 
 #endif  /* stdlib.h */

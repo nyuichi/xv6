@@ -9,7 +9,6 @@
     jr r28
 
 SYSCALL(fork)
-SYSCALL(exit)
 SYSCALL(wait)
 SYSCALL(pipe)
 SYSCALL(read)
@@ -30,3 +29,9 @@ SYSCALL(sbrk)
 SYSCALL(sleep)
 SYSCALL(uptime)
 SYSCALL(halt)
+
+.global _exit
+_exit:
+  mov r1, SYS_exit
+  sysenter
+  jr r28

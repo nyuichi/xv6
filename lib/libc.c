@@ -79,7 +79,7 @@ void longjmp(jmp_buf buf, int val)
 
 FILE _iob[OPEN_MAX] = {     /* stdin, stdout, stderr */
   { 0, (char *) 0, (char *) 0, _READ, 0 },
-  { 0, (char *) 0, (char *) 0, _WRITE, 1 },
+  { 0, (char *) 0, (char *) 0, _WRITE | _LNBUF, 1 },
   { 0, (char *) 0, (char *) 0, _WRITE | _UNBUF, 2 }
 };
 
@@ -186,21 +186,24 @@ int fflush(FILE *f)
 
 int fputc(int x, FILE *fp)
 {
-  if (--fp->cnt >= 0) {
+  int flush = (fp->flag & _LNBUF) && x == '\n';
+
+  if (--fp->cnt >= 0 && !flush) {
     return *(fp)->ptr++ = x;
   } else {
     return _flushbuf(x, fp);
   }
 }
 
+
 int fgetc(FILE *fp)
 {
-  fflush(NULL);
   if (--fp->cnt >= 0) {
     return (unsigned char) *(fp)->ptr++;
   } else {
     return _fillbuf(fp);
   }
+
 }
 
 int fputs(char *s, FILE *stream)
@@ -760,9 +763,16 @@ int vfprintf(FILE *fp, const char *fmt, va_list ap)
 
 /* stdlib.h */
 
+void exit(int status)
+{
+  fflush(NULL);
+  _exit();
+}
+
+
 void abort(void)
 {
-  printf("abort!\n");
+  fprintf(stderr, "abort!\n");
   exit(1);
 }
 
@@ -948,6 +958,18 @@ malloc(unsigned nbytes)
 }
 
 
+int
+atoi(const char *s)
+{
+  int n;
+
+  n = 0;
+  while('0' <= *s && *s <= '9')
+    n = n*10 + *s++ - '0';
+  return n;
+}
+
+
 /* string.h */
 
 size_t strlen(const char *str)
@@ -1025,5 +1047,25 @@ void *memcpy(void *dst, const void *src, size_t n)
   while (n-- > 0) {
     *d++ = *s++;
   }
+  return dst;
+}
+
+void*
+memmove(void *dst, const void *src, size_t n)
+{
+  const char *s;
+  char *d;
+
+  s = src;
+  d = dst;
+  if(s < d && s + n > d){
+    s += n;
+    d += n;
+    while(n-- > 0)
+      *--d = *--s;
+  } else
+    while(n-- > 0)
+      *d++ = *s++;
+
   return dst;
 }

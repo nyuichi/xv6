@@ -11,7 +11,7 @@ ssize_t read(int, void *, size_t);
 int close(int);
 
 int fork(void);
-//int exit(void);
+int _exit(void);
 int wait(void);
 int pipe(int*);
 int kill(int);

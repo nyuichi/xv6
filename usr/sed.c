@@ -2,7 +2,7 @@
 // Only supports s and d command.
 // Not checked regexp
 // (example)
-//  * sed 1,5d 
+//  * sed 1,5d
 //   -> delete line 1 to 5
 //  * sed 2s/abc/pqr/g
 //   -> substitute pqr for abc in line 2
@@ -11,13 +11,14 @@
 //  * sed 3apqr
 //   -> insert pqr after line 3
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <xv6/user.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 char buf[1024];
 char *extractline(char *option, int *start, int *end);
- 
+
 void sed_delete(int fd, int start, int end);
 void sed_substitute(int fd, int start, int end, char *option);
 void sed_insert(int fd, int start, int end, char *txt);
@@ -45,7 +46,7 @@ void sed(char *option, int fd){
     sed_insert(fd, start, end, option);
     return;
   default:
-    printf(1, "sed: wrong command\n");
+    printf("sed: wrong command\n");
     return;
   }
 }
@@ -55,35 +56,35 @@ int main(int argc, char *argv[]){
   char *option;
 
   if(argc <= 1){
-    printf(2, "usage: sed [OPTION] [input]\n");
-    printf(2, "OPTION: [line][command]\n");
-    printf(2, "command: d(delete), s(substitute), a(append), i(insert)\n");
-    exit();
+    fprintf(stderr, "usage: sed [OPTION] [input]\n");
+    fprintf(stderr, "OPTION: [line][command]\n");
+    fprintf(stderr, "command: d(delete), s(substitute), a(append), i(insert)\n");
+    exit(1);
   }
   option = argv[1];
 
   if(argc <= 2){
     sed(option, 0);
-    exit();
+    exit(0);
   }
-  
+
   for(i = 2; i < argc; i++){
     if((fd = open(argv[i], 0)) < 0){
-      printf(1, "sed: cannot open %s\n", argv[i]);
-      exit();
+      fprintf(stderr, "sed: cannot open %s\n", argv[i]);
+      exit(1);
     }
     sed(option, fd);
     close(fd);
   }
-  
-  exit();
+
+  exit(0);
 }
 
 // extract line option
 char *extractline(char *option, int *start, int *end){
   *start = 0;
   *end   = -1;
-  
+
   // line optioned
   while(*option >= '0' && *option <= '9'){
     *start += (*start)*10 + ((*option) - '0');
@@ -112,14 +113,15 @@ int isrange(int start, int end, int line){
 }
 
 
-// delete line 
+// delete line
 void sed_delete(int fd, int start, int end){
   int n, m, l;
   char *p, *q;
 
   m = 0;
   l = 0;
-  while((n = read(fd, buf+m, sizeof(buf)-m)) >0 ){
+  while((n = read(fd, buf+m, sizeof(buf)-m-1)) >0 ){
+    buf[m+n]=0;
     m += n;
     p = buf;
     while((q = strchr(p, '\n')) != 0){
@@ -154,7 +156,7 @@ int parse_regexp_sub(char *re, char *from, char *to, int *g){
 
   strcpy(from, p);
   from[q-p] = '\0';
-  
+
   p = q+1;
   if((q = strchr(p, '/')) == 0)
     return -1;
@@ -217,7 +219,7 @@ char *replacebegin(char *re, char *text){
   if(re[0] == '$' && re[1] == '\0'){
     if(*text == '\0')
       return text;
-    else 
+    else
       return 0;
   }
   if(*text!='\0' && (re[0]=='.' || re[0]==*text)){
@@ -243,13 +245,14 @@ void sed_substitute(int fd, int start, int end, char *re){
   char from[128], to[128];
 
   if(parse_regexp_sub(re, from, to, &g) < 0){
-    printf(1, "sed: unknown regexp\n");
-    exit();
+    fprintf(stderr, "sed: unknown regexp\n");
+    exit(1);
   }
 
   m = 0;
   l = 0;
-  while((n = read(fd, buf+m, sizeof(buf)-m)) >0 ){
+  while((n = read(fd, buf+m, sizeof(buf)-m-1)) >0 ){
+    buf[m+n]=0;
     m += n;
     p = buf;
     while((q = strchr(p, '\n')) != 0){
@@ -276,10 +279,10 @@ void sed_substitute(int fd, int start, int end, char *re){
       memmove(buf, p, m);
       memset(buf+m, '\0', sizeof(buf)-m);
     }
-  } 
+  }
 }
 
-// append, insert 
+// append, insert
 void sed_insert_append(int flg, int fd, int start, int end, char *txt);
 void sed_insert(int fd, int start, int end, char *txt){
   sed_insert_append(0, fd, start, end, txt);
@@ -287,7 +290,7 @@ void sed_insert(int fd, int start, int end, char *txt){
 void sed_append(int fd, int start, int end, char *txt){
   sed_insert_append(1, fd, start, end, txt);
 }
-// flg 
+// flg
 //  0 -> insert
 //  1 -> append
 void sed_insert_append(int flg, int fd, int start, int end, char *txt){
@@ -301,7 +304,8 @@ void sed_insert_append(int flg, int fd, int start, int end, char *txt){
 
   m = 0;
   l = 0;
-  while((n = read(fd, buf+m, sizeof(buf)-m)) >0 ){
+  while((n = read(fd, buf+m, sizeof(buf)-m-1)) >0 ){
+    buf[m+n]=0;
     m += n;
     p = buf;
     while((q = strchr(p, '\n')) != 0){
@@ -328,7 +332,5 @@ void sed_insert_append(int flg, int fd, int start, int end, char *txt){
       memmove(buf, p, m);
       memset(buf+m, '\0', sizeof(buf)-m);
     }
-  } 
+  }
 }
-
-

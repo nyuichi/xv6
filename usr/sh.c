@@ -1,8 +1,10 @@
 // Shell.
 
-#include <sys/types.h>
-#include <xv6/user.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 // Parsed command representation
 #define EXEC  1
@@ -65,8 +67,8 @@ runcmd(struct cmd *cmd)
   struct redircmd *rcmd;
 
   if(cmd == 0)
-    exit();
-  
+    exit(0);
+
   switch(cmd->type){
   default:
     panic("runcmd");
@@ -74,17 +76,17 @@ runcmd(struct cmd *cmd)
   case EXEC:
     ecmd = (struct execcmd*)cmd;
     if(ecmd->argv[0] == 0)
-      exit();
+      exit(0);
     exec(ecmd->argv[0], ecmd->argv);
-    printf(2, "exec %s failed\n", ecmd->argv[0]);
+    fprintf(stderr, "exec %s failed\n", ecmd->argv[0]);
     break;
 
   case REDIR:
     rcmd = (struct redircmd*)cmd;
     close(rcmd->fd);
     if(open(rcmd->file, rcmd->mode) < 0){
-      printf(2, "open %s failed\n", rcmd->file);
-      exit();
+      fprintf(stderr, "open %s failed\n", rcmd->file);
+      exit(1);
     }
     runcmd(rcmd->cmd);
     break;
@@ -120,22 +122,22 @@ runcmd(struct cmd *cmd)
     wait();
     wait();
     break;
-    
+
   case BACK:
     bcmd = (struct backcmd*)cmd;
     if(fork1() == 0)
       runcmd(bcmd->cmd);
     break;
   }
-  exit();
+  exit(0);
 }
 
 int
 getcmd(char *buf, int nbuf)
 {
-  printf(2, "$ ");
+  fprintf(stderr, "$ ");
   memset(buf, 0, nbuf);
-  gets(buf, nbuf);
+  fgets(buf, nbuf, stdin);
   if(buf[0] == 0) // EOF
     return -1;
   return 0;
@@ -146,7 +148,7 @@ main(void)
 {
   static char buf[100];
   int fd;
-  
+
   // Assumes three file descriptors open.
   while((fd = open("console", O_RDWR)) >= 0){
     if(fd >= 3){
@@ -154,7 +156,7 @@ main(void)
       break;
     }
   }
-  
+
   // Read and run input commands.
   while(getcmd(buf, sizeof(buf)) >= 0){
     if(buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' '){
@@ -162,28 +164,28 @@ main(void)
       // Chdir has no effect on the parent if run in the child.
       buf[strlen(buf)-1] = 0;  // chop \n
       if(chdir(buf+3) < 0)
-        printf(2, "cannot cd %s\n", buf+3);
+        fprintf(stderr, "cannot cd %s\n", buf+3);
       continue;
     }
     if(fork1() == 0)
       runcmd(parsecmd(buf));
     wait();
   }
-  exit();
+  exit(0);
 }
 
 void
 panic(char *s)
 {
-  printf(2, "%s\n", s);
-  exit();
+  fprintf(stderr, "%s\n", s);
+  exit(1);
 }
 
 int
 fork1(void)
 {
   int pid;
-  
+
   pid = fork();
   if(pid == -1)
     panic("fork");
@@ -266,7 +268,7 @@ gettoken(char **ps, char *es, char **q, char **eq)
 {
   char *s;
   int ret;
-  
+
   s = *ps;
   while(s < es && strchr(whitespace, *s))
     s++;
@@ -299,7 +301,7 @@ gettoken(char **ps, char *es, char **q, char **eq)
   }
   if(eq)
     *eq = s;
-  
+
   while(s < es && strchr(whitespace, *s))
     s++;
   *ps = s;
@@ -310,7 +312,7 @@ int
 peek(char **ps, char *es, char *toks)
 {
   char *s;
-  
+
   s = *ps;
   while(s < es && strchr(whitespace, *s))
     s++;
@@ -333,7 +335,7 @@ parsecmd(char *s)
   cmd = parseline(&s, es);
   peek(&s, es, "");
   if(s != es){
-    printf(2, "leftovers: %s\n", s);
+    fprintf(stderr, "leftovers: %s\n", s);
     panic("syntax");
   }
   nulterminate(cmd);
@@ -418,7 +420,7 @@ parseexec(char **ps, char *es)
   int tok, argc;
   struct execcmd *cmd;
   struct cmd *ret;
-  
+
   if(peek(ps, es, "("))
     return parseblock(ps, es);
 
@@ -457,7 +459,7 @@ nulterminate(struct cmd *cmd)
 
   if(cmd == 0)
     return 0;
-  
+
   switch(cmd->type){
   case EXEC:
     ecmd = (struct execcmd*)cmd;
@@ -476,7 +478,7 @@ nulterminate(struct cmd *cmd)
     nulterminate(pcmd->left);
     nulterminate(pcmd->right);
     break;
-    
+
   case LIST:
     lcmd = (struct listcmd*)cmd;
     nulterminate(lcmd->left);
