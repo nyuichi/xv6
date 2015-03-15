@@ -44,29 +44,11 @@ int fflush(FILE *);
 #define ferror(p)   (((p)->flag & _ERR) != 0)
 #define fileno(p)   ((p)->fd)
 
-#if 0
-#define getc(p)                                     \
-  ((--(p)->cnt >= 0)                                \
-   ? (unsigned char) *(p)->ptr++                    \
-   : _fillbuf(p))
-
-#define putc(x, p)                                            \
-  ((--(p)->cnt >= 0 && (((p)->flag & _LNBUF) && (x) == '\n')) \
-   ? *(p)->ptr++ = (x)                                        \
-   : _flushbuf((x), (p)))
-#endif
-
-#define getc(p) fgetc(p)
-#define putc(x, p) fputc(x, p)
+#define getc(p)     fgetc(p)
+#define putc(x, p)  fputc(x, p)
 #define getchar()   getc(stdin)
 #define putchar(x)  putc((x), stdout)
 
-/*
-typedef struct {
-  int (*read)(void);
-  int (*write)(int);
-} FILE;
-*/
 
 int fputc(int, FILE *);
 int fgetc(FILE *);
