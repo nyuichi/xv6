@@ -356,17 +356,17 @@ void deleteline_normal(){
 }
 
 void save(){
-  int fd, n;
+  FILE *ofile;
   struct linebuffer *lbp;
 
-  fd = open(outputfilename, O_CREATE | O_RDWR);
+  ofile = fopen(outputfilename, "w+");
 
   lbp = linebuffer_head.next;
   while(lbp != &linebuffer_tail){
-    write(fd, lbp->buf, lbp->size+1);
+    fprintf(ofile, "%s", lbp->buf);
     lbp = lbp->next;
   }
-  close(fd);
+  fclose(ofile);
 }
 
 void load(){
