@@ -44,7 +44,7 @@ CFLAGS = -I. -I./include
 NATIVECFLAGS = $(CFLAGS)
 ASFLAGS = -v -Wno-unused-label
 SIMFLAGS = -stat -debug
-VPATH = lib:usr
+VPATH = lib:usr:usr/as
 
 xv6.img: kernelmemfs
 	dd if=kernelmemfs of=xv6.img
@@ -88,8 +88,11 @@ lib/_usys.s: lib/usys.S
 _%: _%.s $(LIBC)
 	$(AS) $(ASFLAGS) -e 0 -o $@ $< $(LIBC) $(UCCLIBS) -f __UCC_HEAP_START
 
-_sl: lib/_curses.s $(ULIB) usr/_sl.s
+_sl: lib/_curses.s usr/_sl.s
 	$(AS) $(ASFLAGS) -e 0 -o $@ usr/_sl.s lib/_curses.s $(LIBC) $(UCCLIBS) -f __UCC_HEAP_START
+ASASMS=usr/as/_as.s usr/as/_ops.s usr/as/_parse.s usr/as/_vector.s
+_as: $(ASASMS)
+	$(AS) $(ASFLAGS) -e 0 -o _as $(ASASMS) $(LIBC) $(UCCLIBS) -f __UCC_HEAP_START
 
 
 mkfs: tools/mkfs.c
@@ -120,6 +123,7 @@ UPROGS=\
 	_minesweeper\
 	_pwd\
 	_vi\
+	_as\
 # remove this to save file system size.
 #_forktest\
 #_stressfs\
@@ -127,7 +131,7 @@ UPROGS=\
 #_usertests\
 
 fs.img: mkfs README $(UPROGS)
-	./mkfs fs.img README $(UPROGS)
+	./mkfs fs.img README hello.s $(UPROGS)
 
 -include *.d
 
@@ -137,6 +141,7 @@ clean:
 	initcode initcode.out kernel xv6.img fs.img kernelmemfs mkfs \
 	.gdbinit \
 	$(ASMS) \
+	$(ASASMS) \
 	$(UPROGS) _*.s \
 	lib/*.o lib/*.d lib/_*.s \
 	usr/*.o usr/*.d usr/*.sym usr/*.asm usr/_*.s
