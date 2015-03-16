@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <termios.h>
 
-struct termios termios;
+struct termios termios, original_termios;
 
 #define UP    0
 #define DOWN  1
@@ -62,9 +62,7 @@ void resetColor(){
 
 void showBoard(){
   int i,j,b;
-  // clear screen
-  printf("\033[2J");
-  printf("\033[1;1H");
+  printf("\033[H");
   // draw
   for(i=0; i<4; i++){
     printf("+------+------+------+------+\n");
@@ -150,13 +148,17 @@ void putNum(){
 
 void init_term(){
   tcgetattr(0, &termios);
-  termios.c_lflag &= ~ICANON;
+  original_termios = termios;
+  cfmakeraw(&termios);
   tcsetattr(0, TCSANOW, &termios);
+  printf("\033[?25l");
+  fflush(stdout);
 }
 
 void restore_term(){
-  termios.c_lflag |= ICANON;
-  tcsetattr(0, TCSANOW, &termios);
+  tcsetattr(0, TCSANOW, &original_termios);
+  printf("\033[?25h");
+  fflush(stdout);
 }
 
 void init(){
@@ -183,13 +185,13 @@ void end(){
 
 int c2dir(char c){
   switch(c){
-  case 'w':
+  case 'w': case 'k': case 'A':
     return 0;
-  case 's':
+  case 's': case 'j': case 'B':
     return 1;
-  case 'd':
+  case 'd': case 'l': case 'C':
     return 2;
-  case 'a':
+  case 'a': case 'h': case 'D':
     return 3;
   default:
     return -1;
@@ -291,8 +293,6 @@ int main(){
     showBoard();
     printf("score: %d\n", score);
     printf("(enter \'q\' to exit...)\n");
-    printf("> ");
-    fflush(stdout);
     do{
       char c;
       read(0, &c, 1);
