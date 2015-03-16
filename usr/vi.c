@@ -334,7 +334,8 @@ void delete_normal(){
   memmove(cursor.linebuffer->buf+cursor.x, cursor.linebuffer->buf+(cursor.x+1), cursor.linebuffer->size-cursor.x);
   cursor.linebuffer->buf[cursor.linebuffer->size] = '\0';
 
-  cursor.linebuffer->size--;
+  if(cursor.linebuffer->size > 0)
+    cursor.linebuffer->size--;
   cursor_left();
 }
 void deleteline_normal(){
