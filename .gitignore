@@ -3,6 +3,7 @@ _*
 *.o
 *.d
 *.s
+!hello.s
 *.asm
 *.sym
 *.img
