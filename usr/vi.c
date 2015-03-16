@@ -9,7 +9,7 @@
 //  statusbar is append after SCREEN_HEIGHT screen
 //  actual screen height is SCREEN_HEIGHT+1
 #define SCREEN_WIDTH  30
-#define SCREEN_HEIGHT 15
+#define SCREEN_HEIGHT 10
 
 // line buffer length
 #define LINE_BUFFER_LENGTH 128
@@ -179,9 +179,9 @@ void dump(){
   fprintf(stdout, "---cursor---\n");
   fprintf(stdout, "x:%d, y:%d, line:%s\n", cursor.x, cursor.y, cursor.linebuffer->buf);
   fprintf(stdout, ":::cursor:::\n");
-  fprintf(stdout, "---command---\n");
-  fprintf(stdout, "%d\n", command);
-  fprintf(stdout, ":::command:::\n");
+//  fprintf(stdout, "---command---\n");
+//  fprintf(stdout, "%d\n", command);
+//  fprintf(stdout, ":::command:::\n");
 }
 */
 
@@ -201,6 +201,9 @@ void display(struct linebuffer *head){
     lbp = lbp->next;
   }
 
+  if(lbp == &linebuffer_tail)
+    fprintf(stdout, "\n");
+
   if(v)
     fprintf(stdout, "%s  %s", statusbar.mode, statusbar.msg);
 
@@ -215,7 +218,7 @@ void set_statusbar_mode(char *m){
   strcpy(statusbar.mode, m);
 }
 void statusbar_init(){
-  set_statusbar_mode("\n[normal]");
+  set_statusbar_mode("[normal]");
   statusbar.visibility = STATUSBAR_VISIBLE;
   statusbar.msglength  = 0;
 }
@@ -318,10 +321,10 @@ void mode_change(int m){
   mode = m;
   switch(m){
   case MODE_INSERT:
-    set_statusbar_mode("\n[insert]");
+    set_statusbar_mode("[insert]");
     return;
   case MODE_NORMAL:
-    set_statusbar_mode("\n[normal]");
+    set_statusbar_mode("[normal]");
     return;
   }
 }
@@ -372,19 +375,27 @@ void save(){
 void load(){
   FILE *ifile;
   char buf[LINE_BUFFER_LENGTH];
+  int len;
   struct linebuffer *lbp,*lbpnext;
 
   ifile = fopen(inputfilename, "r");
   if(ifile == 0) return;
 
-  lbp  = linebuffer_head.next;
+  lbp  = &linebuffer_head;
   while(fgets(buf, LINE_BUFFER_LENGTH, ifile) != 0){
     lbpnext = create_linebuffer();
     strcpy(lbpnext->buf, buf);
+    lbpnext->size = strlen(buf)-1;
     link_linebuffer(lbp, lbpnext);
     lbp  = lbpnext;
   }
   link_linebuffer(lbp, &linebuffer_tail);
+  
+  cursor.linebuffer = linebuffer_head.next;
+  cursor.x = 0;
+  cursor.y = 1;
+  screen.upperline = linebuffer_head.next;
+
   fclose(ifile);
 }
 
@@ -501,11 +512,11 @@ void input_hook(){
 
   switch(mode){
   case MODE_NORMAL:
-    set_statusbar_mode("\n[normal]");
+    set_statusbar_mode("[normal]");
     input_mode_normal(c);
     return;
   case MODE_INSERT:
-    set_statusbar_mode("\n[insert]");
+    set_statusbar_mode("[insert]");
     input_mode_insert(c);
     return;
   default:
