@@ -108,8 +108,6 @@ FILE *fopen(const char *name, const char *mode)
   else if (*mode == 'a') {
     if ((fd = open(name, O_WRONLY)) == -1)
       fd = open(name, O_WRONLY);
-  } else if (strcmp(mode, "r+") == 0) {
-    fd = open(name, O_RDWR);
   } else
     fd = open(name, O_RDONLY);
 
@@ -119,7 +117,7 @@ FILE *fopen(const char *name, const char *mode)
   fp->fd = fd;
   fp->cnt = 0;
   fp->base = NULL;
-  fp->flag = _READ | _WRITE;
+  fp->flag = (*mode == 'r')? _READ : _WRITE;
   return fp;
 
 }

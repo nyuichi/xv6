@@ -76,7 +76,7 @@ void quit();
 
 // screen
 void screen_init(){
-  screen.upperline = linebuffer_head.next;  
+  screen.upperline = linebuffer_head.next;
   screen.line = 1;
 }
 void screen_up(){
@@ -92,7 +92,7 @@ void screen_down(){
   screen.line++;
 }
 int is_screen_up(){
-  return screen.upperline->prev == cursor.linebuffer;  
+  return screen.upperline->prev == cursor.linebuffer;
 }
 int is_screen_down(){
   int i;
@@ -167,7 +167,7 @@ void dump(){
   struct linebuffer *lbp;
 
   fprintf(stdout, "\n=== dump ===\n");
-  
+
   lbp = &linebuffer_head;
   fprintf(stdout, "---buffer---\n");
   while(lbp != &linebuffer_tail){
@@ -212,7 +212,7 @@ void display(struct linebuffer *head){
 
 // status bar
 void set_statusbar_mode(char *m){
-  strcpy(statusbar.mode, m);  
+  strcpy(statusbar.mode, m);
 }
 void statusbar_init(){
   set_statusbar_mode("\n[normal]");
@@ -227,7 +227,7 @@ void set_statusbar_message(char *m){
   strcpy(statusbar.msg, m);
 }
 void set_statusbar_visibility(int v){
-  statusbar.visibility = v;  
+  statusbar.visibility = v;
 }
 void insert_statusbar_message(char c){
   int i;
@@ -237,7 +237,7 @@ void insert_statusbar_message(char c){
       statusbar.msg[i] = c;
       statusbar.msg[i+1] = '\0';
       return;
-    }  
+    }
   }
 }
 void clear_statusbar_message(){
@@ -267,7 +267,7 @@ void statusbar_command_exec(){
 
   while(statusbar.msg[i] == ' ' && statusbar.msg[i] != '\0') i++;
   arg2 = statusbar.msg+i;
-  
+
   switch(*arg1){
   case 'e':
     if(*arg2 != '\0'){
@@ -327,7 +327,7 @@ void mode_change(int m){
 }
 
 void delete_normal(){
-  if(*(cursor.linebuffer->buf+cursor.x) == '\n' || cursor.x == cursor.linebuffer->size) 
+  if(*(cursor.linebuffer->buf+cursor.x) == '\n' || cursor.x == cursor.linebuffer->size)
     return;
   memmove(cursor.linebuffer->buf+cursor.x, cursor.linebuffer->buf+cursor.x+1, cursor.linebuffer->size-cursor.x);
 
@@ -348,7 +348,7 @@ void deleteline_normal(){
 
   free(cursor.linebuffer->buf);
   free(cursor.linebuffer);
-  
+
   if(n != &linebuffer_tail)
     cursor.linebuffer = n;
   else
@@ -364,18 +364,17 @@ void save(){
   lbp = linebuffer_head.next;
   while(lbp != &linebuffer_tail){
     write(fd, lbp->buf, lbp->size+1);
-    lbp = lbp->next;  
+    lbp = lbp->next;
   }
   close(fd);
 }
 
 void load(){
-  /*
   FILE *ifile;
   char buf[LINE_BUFFER_LENGTH];
   struct linebuffer *lbp,*lbpnext;
 
-  ifile = fopen(inputfilename, "r+");
+  ifile = fopen(inputfilename, "r");
   if(ifile == 0) return;
 
   lbp  = linebuffer_head.next;
@@ -387,7 +386,6 @@ void load(){
   }
   link_linebuffer(lbp, &linebuffer_tail);
   fclose(ifile);
-  */
 }
 
 void quit(){
@@ -395,7 +393,7 @@ void quit(){
 }
 
 int ischaracter(char c){
-  return 0x20 <= c && c <= 0x7e;  
+  return 0x20 <= c && c <= 0x7e;
 }
 
 void input_command(char c){
@@ -413,7 +411,7 @@ void input_command(char c){
       return;
     insert_statusbar_message(c);
     return;
-  }  
+  }
 }
 
 void input_mode_normal(char c){
@@ -451,7 +449,7 @@ void input_mode_normal(char c){
   case ':':
     statusbar_command_begin();
     return;
-  }  
+  }
 }
 
 void enter_insert(){
@@ -581,5 +579,5 @@ int main(){
   restore_term();
   cleanup();
 
-  exit(0);  
+  exit(0);
 }
