@@ -457,6 +457,7 @@ void enter_insert(){
   lbp = create_linebuffer();
 
   strcpy(lbp->buf, cursor.linebuffer->buf+cursor.x);
+  lbp->size = cursor.linebuffer->size - cursor.x;
   cursor.linebuffer->size = cursor.x;
   cursor.linebuffer->buf[cursor.x] = '\n';
   memset(cursor.linebuffer->buf+cursor.x+1, '\0', LINE_BUFFER_LENGTH-cursor.x-1);
