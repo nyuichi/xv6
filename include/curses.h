@@ -17,6 +17,7 @@ typedef struct charcell{
 
 // initializes
 void initscr();
+void noecho();
 void curs_set(int);
 void endwin();
 

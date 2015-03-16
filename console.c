@@ -4,8 +4,10 @@
 
 #include <sys/types.h>
 #include <sys/file.h>
+#include <sys/ioctl.h>
 #include <xv6/param.h>
 #include <xv6/fs.h>
+#include <termios.h>
 #include "defs.h"
 #include "traps.h"
 #include "spinlock.h"
@@ -21,6 +23,7 @@ static int panicked = 0;
 static struct {
   struct spinlock lock;
   int locking;
+  struct termios termios;
 } cons;
 
 static void
@@ -84,6 +87,13 @@ consputc(int c)
   }
 }
 
+void
+consechoc(int c)
+{
+  if(cons.termios.c_lflag & ECHO)
+    consputc(c);
+}
+
 #define INPUT_BUF 128
 struct {
   struct spinlock lock;
@@ -102,34 +112,34 @@ consoleintr(int (*getc)(void))
 
   acquire(&input.lock);
   while((c = getc()) >= 0){
-    switch(c){
-    case C('P'):  // Process listing.
-      procdump();
-      break;
-    case C('U'):  // Kill line.
-      while(input.e != input.w &&
-            input.buf[(input.e-1) % INPUT_BUF] != '\n'){
-        input.e--;
-        consputc(BACKSPACE);
-      }
-      break;
-    case C('H'): case '\x7f':  // Backspace
-      if(input.e != input.w){
-        input.e--;
-        consputc(BACKSPACE);
-      }
-      break;
-    default:
-      if(c != 0 && input.e-input.r < INPUT_BUF){
-        c = (c == '\r') ? '\n' : c;
-        input.buf[input.e++ % INPUT_BUF] = c;
-        consputc(c);
-        if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
-          input.w = input.e;
-          wakeup(&input.r);
+    if(cons.termios.c_lflag & ICANON){
+      switch(c){
+      case C('P'):  // Process listing.
+        procdump();
+        continue;
+      case C('U'):  // Kill line.
+        while(input.e != input.w &&
+              input.buf[(input.e-1) % INPUT_BUF] != '\n'){
+          input.e--;
+          consechoc(BACKSPACE);
         }
+        continue;
+      case C('H'): case '\x7f':  // Backspace
+        if(input.e != input.w){
+          input.e--;
+          consechoc(BACKSPACE);
+        }
+        continue;
       }
-      break;
+    }
+    if(c != 0 && input.e-input.r < INPUT_BUF){
+      c = (c == '\r') ? '\n' : c;
+      input.buf[input.e++ % INPUT_BUF] = c;
+      consechoc(c);
+      if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF || (cons.termios.c_lflag & ICANON) == 0){
+        input.w = input.e;
+        wakeup(&input.r);
+      }
     }
   }
   release(&input.lock);
@@ -164,7 +174,7 @@ consoleread(struct inode *ip, char *dst, int n)
     }
     *dst++ = c;
     --n;
-    if(c == '\n')
+    if(c == '\n' && cons.termios.c_lflag & ICANON)
       break;
   }
   release(&input.lock);
@@ -188,6 +198,20 @@ consolewrite(struct inode *ip, char *buf, int n)
   return n;
 }
 
+int
+consoleioctl(struct inode *ip, int req)
+{
+  struct termios *termios_p;
+  if(req != TCGETA && req != TCSETA)
+    return -1;
+  if(argptr(2, (void*)&termios_p, sizeof(*termios_p)) < 0)
+    return -1;
+  if(req == TCGETA)
+    *termios_p = cons.termios;
+  else
+    cons.termios = *termios_p;
+}
+
 void
 consoleinit(void)
 {
@@ -196,6 +220,9 @@ consoleinit(void)
 
   devsw[CONSOLE].write = consolewrite;
   devsw[CONSOLE].read  = consoleread;
+  devsw[CONSOLE].ioctl = consoleioctl;
+
+  cons.termios.c_lflag = ECHO | ICANON;
   cons.locking = 1;
 }
 

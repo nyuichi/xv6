@@ -29,6 +29,7 @@ SYSCALL(sbrk)
 SYSCALL(sleep)
 SYSCALL(uptime)
 SYSCALL(halt)
+SYSCALL(ioctl)
 
 .global _exit
 _exit:

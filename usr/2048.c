@@ -1,10 +1,10 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <termios.h>
 
-#define true  1
-#define false 0
-typedef int bool;
+struct termios termios;
 
 #define UP    0
 #define DOWN  1
@@ -148,8 +148,20 @@ void putNum(){
   board[b%4][b/4] = n;
 }
 
+void init_term(){
+  tcgetattr(0, &termios);
+  termios.c_lflag &= ~ICANON;
+  tcsetattr(0, TCSANOW, &termios);
+}
+
+void restore_term(){
+  termios.c_lflag |= ICANON;
+  tcsetattr(0, TCSANOW, &termios);
+}
+
 void init(){
   int i,j,b;
+  init_term();
   for(i=0; i<4; i++)
     for(j=0; j<4; j++)
       board[i][j] = 0;
@@ -162,6 +174,11 @@ void init(){
   putNum();
 
   printf("\033[2J");
+}
+
+void end(){
+  restore_term();
+  exit(0);
 }
 
 int c2dir(char c){
@@ -267,6 +284,7 @@ void Move(int d){
 
 int main(){
   int d;
+  init_term();
   init();
 
   do{
@@ -277,9 +295,9 @@ int main(){
     fflush(stdout);
     do{
       char c;
-      c = getchar();
+      read(0, &c, 1);
       if (c == 'q')
-        exit(0);
+        end();
       d = c2dir(c);
     } while(d==-1 || !movable(d));
     Move(d);
@@ -290,5 +308,5 @@ int main(){
   printf("gameover...\n");
   printf("your score is: %d\n\n", score);
 
-  exit(0);
+  end();
 }
