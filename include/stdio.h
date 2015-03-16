@@ -57,6 +57,8 @@ int fputs(char *, FILE *);
 char *fgets(char *, int, FILE *);
 char *gets(char *);
 
+FILE *fopen(const char *, const char *);
+int fclose(FILE *);
 
 int printf(const char *, ...);
 int fprintf(FILE *, const char *, ...);

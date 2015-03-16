@@ -16,9 +16,6 @@ int wait(void);
 int pipe(int*);
 int kill(int);
 int exec(char*, char**);
-#ifndef _UCC_FCNTL_H
-int open(char*, int);
-#endif
 int mknod(char*, short, short);
 int unlink(char*);
 int fstat(int fd, struct stat*);

@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <termios.h>
 #include <sys/ioctl.h>
@@ -84,6 +85,53 @@ FILE _iob[OPEN_MAX] = {     /* stdin, stdout, stderr */
   { 0, (char *) 0, (char *) 0, _WRITE | _LNBUF, 1 },
   { 0, (char *) 0, (char *) 0, _WRITE | _UNBUF, 2 }
 };
+
+
+FILE *fopen(const char *name, const char *mode)
+{
+  int fd;
+  FILE *fp;
+
+  if (*mode != 'r' && *mode != 'w' && *mode != 'a')
+    return NULL;
+
+
+  for (fp = _iob; fp < _iob + OPEN_MAX; fp++)
+    if ( (fp->flag & (_READ | _WRITE)) == 0)
+      break;  /* found free slot */
+
+  if (fp >= _iob + OPEN_MAX)  /* no free slots */
+    return NULL;
+
+  if (*mode == 'w')
+    fd = open(name, O_CREATE | O_WRONLY);
+  else if (*mode == 'a') {
+    if ((fd = open(name, O_WRONLY)) == -1)
+      fd = open(name, O_WRONLY);
+  } else if (strcmp(mode, "r+") == 0) {
+    fd = open(name, O_RDWR);
+  } else
+    fd = open(name, O_RDONLY);
+
+  if (fd == -1)   /* couldn't access name */
+    return NULL;
+
+  fp->fd = fd;
+  fp->cnt = 0;
+  fp->base = NULL;
+  fp->flag = _READ | _WRITE;
+  return fp;
+
+}
+
+int fclose(FILE *fp) {
+
+  fflush(fp);
+  fp->flag = 0;
+  free(fp->base);
+  return close(fp->fd);
+}
+
 
 int _fillbuf(FILE *fp) {
   int bufsize;
@@ -286,6 +334,10 @@ char *gets(char *s)
   return (c == EOF && buf == s) ? NULL : s;
 
 }
+
+
+
+
 
 #define LEFT      (1 << 0)
 #define ZEROPAD   (1 << 1)
