@@ -71,6 +71,7 @@ panic(char *s)
 }
 
 #define BACKSPACE 0x100
+#define C(x)  ((x)-'@')  // Control-x
 
 void
 consputc(int c)
@@ -90,7 +91,7 @@ consputc(int c)
 void
 consechoc(int c)
 {
-  if(cons.termios.c_lflag & ECHO)
+  if(c != C('D') && cons.termios.c_lflag & ECHO)
     consputc(c);
 }
 
@@ -102,8 +103,6 @@ struct {
   uint w;  // Write index
   uint e;  // Edit index
 } input;
-
-#define C(x)  ((x)-'@')  // Control-x
 
 void
 consoleintr(int (*getc)(void))
@@ -164,7 +163,7 @@ consoleread(struct inode *ip, char *dst, int n)
       sleep(&input.r, &input.lock);
     }
     c = input.buf[input.r++ % INPUT_BUF];
-    if(c == C('D')){  // EOF
+    if(c == C('D') && cons.termios.c_lflag & ICANON){  // EOF
       if(n < target){
         // Save ^D for next time, to make sure
         // caller gets a 0-byte result.
