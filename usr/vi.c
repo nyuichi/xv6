@@ -9,7 +9,9 @@
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <termios.h>
 
+struct termios termios;
 // screen
 //  statusbar is append after SCREEN_HEIGHT screen
 //  actual screen height is SCREEN_HEIGHT+1
@@ -315,7 +317,15 @@ struct linebuffer *create_linebuffer(){
 
 // mode
 void mode_change(int m){
-  mode = m;  
+  mode = m;
+  switch(m){
+  case MODE_INSERT:
+    set_statusbar_mode("\n[insert]");
+    return;
+  case MODE_NORMAL:
+    set_statusbar_mode("\n[normal]");
+    return;
+  }
 }
 
 void delete_normal(){
@@ -407,7 +417,8 @@ void input_command(char c){
   case KEYCODE_ESC:
     statusbar_command_end();
     return;
-  case KEYCODE_AT:
+  case KEYCODE_CR:
+  case KEYCODE_LF:
     statusbar_command_exec();
     statusbar_command_begin();
     return;
@@ -488,9 +499,8 @@ void input_mode_insert(char c){
   case KEYCODE_ESC:
     mode_change(MODE_NORMAL);
     return;
-  //case KEYCODE_CR:
-  //case KEYCODE_LF:
-  case KEYCODE_AT:
+  case KEYCODE_CR:
+  case KEYCODE_LF:
     enter_insert();
     return;
   default:
@@ -503,21 +513,32 @@ void input_mode_insert(char c){
 
 void input_hook(){
   char c;
-  c = getchar();
+  read(0, &c, 1);
 
   switch(mode){
   case MODE_NORMAL:
-    input_mode_normal(c);
     set_statusbar_mode("\n[normal]");
+    input_mode_normal(c);
     return;
   case MODE_INSERT:
-    input_mode_insert(c);
     set_statusbar_mode("\n[insert]");
+    input_mode_insert(c);
     return;
   default:
     error("undefined mode");
     return;
   }
+}
+
+// term
+void init_term(){
+tcgetattr(0, &termios);
+termios.c_lflag &= ~ICANON;
+tcsetattr(0, TCSANOW, &termios);
+}
+void restore_term(){
+termios.c_lflag |= ICANON;
+tcsetattr(0, TCSANOW, &termios);
 }
 
 // init
@@ -559,6 +580,7 @@ int main(){
   struct linebuffer *top;
 
   init();
+  init_term();
 
   while(1){
     top = screen_top();
@@ -568,6 +590,7 @@ int main(){
     if(quit_flg) break;
   }
 
+  restore_term();
   cleanup();
 
   exit(0);  
