@@ -590,6 +590,7 @@ int main(){
 
     if(quit_flg) break;
   }
+  printf("\n");
 
   restore_term();
   cleanup();
