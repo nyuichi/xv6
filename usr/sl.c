@@ -50,6 +50,7 @@ int main(int argc, char *argv[])
     }
   }
   initscr();
+  noecho();
   curs_set(0);
 
   for (x = COLS - 1; ; --x) {

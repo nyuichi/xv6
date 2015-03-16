@@ -448,3 +448,20 @@ sys_pipe(void)
   fd[1] = fd1;
   return 0;
 }
+
+int
+sys_ioctl(void)
+{
+  int fd;
+  struct file *f;
+  int request;
+  
+  if(argfd(0, &fd, &f) < 0 || argint(1, &request) < 0)
+    return -1;
+  if(f->ip->type != T_DEV)
+    return -1;
+
+  if(f->ip->major < 0 || f->ip->major >= NDEV || !devsw[f->ip->major].ioctl)
+    return -1;
+  return devsw[f->ip->major].ioctl(f->ip, request);
+}

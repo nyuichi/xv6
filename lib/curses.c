@@ -1,4 +1,8 @@
+#include <termios.h>
 #include <curses.h>
+
+// termios
+struct termios termios;
 
 // screen buffer
 typedef charcell ScreenType[LINES][COLS];
@@ -12,6 +16,14 @@ void initscr(){
   clear();
   cursolX = 0;
   cursolY = 0;
+  tcgetattr(0, &termios);
+}
+
+void noecho(){
+  struct termios noecho;
+  tcgetattr(0, &noecho);
+  noecho.c_lflag &= ~ECHO;
+  tcsetattr(0, TCSANOW, &noecho);
 }
 
 void curs_set(int a){
@@ -30,6 +42,7 @@ void endwin(){
   curs_set(1);
   printf("\n");
   fflush(stdout);
+  tcsetattr(0, TCSANOW, &termios);
 }
 
 // outputs
