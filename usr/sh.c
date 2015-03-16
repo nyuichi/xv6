@@ -152,12 +152,13 @@ main(void)
 
   // Read and run input commands.
   while((buf = readline())){
-    if(buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' '){
+    if(strncmp(buf, "cd ", 3) == 0){
       // Clumsy but will have to do for now.
       // Chdir has no effect on the parent if run in the child.
-      buf[strlen(buf)-1] = 0;  // chop \n
-      if(chdir(buf+3) < 0)
-        fprintf(stderr, "cannot cd %s\n", buf+3);
+      buf += 3;
+      while (*buf == ' ') ++buf;
+      if(chdir(buf) < 0)
+        fprintf(stderr, "cannot cd %s\n", buf);
       continue;
     }
     if(fork1() == 0)
