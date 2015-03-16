@@ -873,90 +873,123 @@ void srand(unsigned seed)
 
 #define NALLOC 1024
 
-// Memory allocator by Kernighan and Ritchie,
-// The C programming Language, 2nd ed.  Section 8.7.
-
-typedef long Align;
-
-union header {
-  struct {
-    union header *ptr;
-    unsigned size;
-  } s;
-  Align x;
+struct header {
+  struct header *next;
+  size_t size;
 };
 
-typedef union header Header;
+typedef struct header Header;
 
 static Header base;
 static Header *freep;
 
-void
-free(void *ap)
+void free(void *ap)
 {
   Header *bp, *p;
 
-  bp = (Header*)ap - 1;
-  for(p = freep; !(bp > p && bp < p->s.ptr); p = p->s.ptr)
-    if(p >= p->s.ptr && (bp > p || bp < p->s.ptr))
+  if (! ap)
+    return;
+
+  bp = (Header *)ap - 1;
+  for (p = freep; !(p < bp && bp < p->next); p = p->next)
+    if (p->next <= p && (p < bp || bp < p->next))
       break;
-  if(bp + bp->s.size == p->s.ptr){
-    bp->s.size += p->s.ptr->s.size;
-    bp->s.ptr = p->s.ptr->s.ptr;
-  } else
-    bp->s.ptr = p->s.ptr;
-  if(p + p->s.size == bp){
-    p->s.size += bp->s.size;
-    p->s.ptr = bp->s.ptr;
-  } else
-    p->s.ptr = bp;
+
+  if (bp + bp->size == p->next) {
+    bp->size += p->next->size;
+    bp->next = p->next->next;
+  } else {
+    bp->next = p->next;
+  }
+
+  if (p + p->size == bp) {
+    p->size += bp->size;
+    p->next = bp->next;
+  } else {
+    p->next = bp;
+  }
+
   freep = p;
 }
 
-static Header*
-morecore(unsigned nu)
+static Header *morecore(size_t nunits)
 {
-  char *p;
-  Header *hp;
+  Header *p;
 
-  if(nu < 4096)
-    nu = 4096;
-  p = sbrk(nu * sizeof(Header));
-  if(p == (char*)-1)
-    return 0;
-  hp = (Header*)p;
-  hp->s.size = nu;
-  free((void*)(hp + 1));
+  nunits = (nunits + NALLOC - 1) / NALLOC * NALLOC;
+  p = (Header *)sbrk(nunits * sizeof(Header));
+  if (p == (Header *)-1)
+    return NULL;
+  p->size = nunits;
+  free(p + 1);
   return freep;
 }
 
-void*
-malloc(unsigned nbytes)
+void *malloc(size_t nbytes)
 {
   Header *p, *prevp;
-  unsigned nunits;
+  size_t nunits;
 
-  nunits = (nbytes + sizeof(Header) - 1)/sizeof(Header) + 1;
-  if((prevp = freep) == 0){
-    base.s.ptr = freep = prevp = &base;
-    base.s.size = 0;
+  nunits = (nbytes + sizeof(Header) - 1) / sizeof(Header) + 1;
+  if (! (prevp = freep)) {  /* no free list yet */
+    base.next = freep = prevp = &base;
+    base.size = 0;
   }
-  for(p = prevp->s.ptr; ; prevp = p, p = p->s.ptr){
-    if(p->s.size >= nunits){
-      if(p->s.size == nunits)
-        prevp->s.ptr = p->s.ptr;
-      else {
-        p->s.size -= nunits;
-        p += p->s.size;
-        p->s.size = nunits;
+  for (p = prevp->next; ; prevp = p, p = p->next) {
+    if (p->size >= nunits) {  /* big enough */
+      if (p->size == nunits) {  /* exactly */
+        prevp->next = p->next;
+      } else {  /* allocate tail end */
+        p->size -= nunits;
+        p += p->size;
+        p->size = nunits;
       }
       freep = prevp;
-      return (void*)(p + 1);
+      return (void *)(p + 1);
     }
-    if(p == freep)
-      if((p = morecore(nunits)) == 0)
-        return 0;
+    if (p == freep)
+      if (! (p = morecore(nunits)))
+        return NULL;
   }
+}
+
+static size_t malloc_size(void *ap)
+{
+  Header *p;
+
+  p = (Header *)ap - 1;
+  return (p->size - 1) * sizeof(Header);
+}
+
+void *realloc(void *ptr, size_t size)
+{
+  void *new;
+
+  if (! ptr)
+    return malloc(size);
+
+  if (size <= malloc_size(ptr))
+    return ptr;
+
+  new = malloc(size);
+  if (! new)
+    return NULL;
+
+  memcpy(new, ptr, malloc_size(ptr));
+  free(ptr);
+
+  return new;
+}
+
+void *calloc(size_t n, size_t size)
+{
+  char *ptr = malloc(n * size);
+
+  if (! ptr)
+    return NULL;
+
+  memset(ptr, 0, n * size);
+  return (void *) ptr;
 }
 
 
