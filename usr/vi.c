@@ -1,9 +1,3 @@
-/*
- * [TODO]
- *  : no return key wait
- *  : delete line bug ?
- *
- */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,12 +5,11 @@
 #include <unistd.h>
 #include <termios.h>
 
-struct termios termios;
 // screen
 //  statusbar is append after SCREEN_HEIGHT screen
 //  actual screen height is SCREEN_HEIGHT+1
 #define SCREEN_WIDTH  30
-#define SCREEN_HEIGHT 10
+#define SCREEN_HEIGHT 15
 
 // line buffer length
 #define LINE_BUFFER_LENGTH 128
@@ -70,6 +63,8 @@ struct screen{
   int line;
   struct linebuffer *upperline;
 }screen;
+
+struct termios termios;
 
 char inputfilename[64];
 char outputfilename[64];
@@ -167,6 +162,7 @@ void cursor_right(){
 }
 
 // debug, dump
+/*
 void dump(){
   struct linebuffer *lbp;
 
@@ -187,6 +183,7 @@ void dump(){
   fprintf(stdout, "%d\n", command);
   fprintf(stdout, ":::command:::\n");
 }
+*/
 
 // display
 void display(struct linebuffer *head){
@@ -207,7 +204,8 @@ void display(struct linebuffer *head){
   if(v)
     fprintf(stdout, "%s  %s", statusbar.mode, statusbar.msg);
 
-  dump();
+  // for debug
+  // dump();
 
   terminal_cursor_update();
 }
@@ -367,21 +365,6 @@ void save(){
     lbp = lbp->next;  
   }
   close(fd);
-
-  /*
-  // code for gcc
-  FILE *ofile;
-  struct linebuffer *lbp;
-
-  ofile = fopen(outputfilename, "w+");
-  
-  lbp = linebuffer_head.next;
-  while(lbp != &linebuffer_tail){
-    fprintf(ofile, "%s", lbp->buf);
-    lbp = lbp->next;
-  }
-  fclose(ofile);
-  */
 }
 
 void load(){
@@ -482,7 +465,6 @@ void enter_insert(){
   link_linebuffer(cursor.linebuffer, lbp);
   link_linebuffer(lbp, lbpnext);
 
-  // loose impl
   cursor_down();
   cursor.x = 0;
 }
@@ -533,13 +515,13 @@ void input_hook(){
 
 // term
 void init_term(){
-tcgetattr(0, &termios);
-termios.c_lflag &= ~ICANON;
-tcsetattr(0, TCSANOW, &termios);
+  tcgetattr(0, &termios);
+  termios.c_lflag &= ~ICANON;
+  tcsetattr(0, TCSANOW, &termios);
 }
 void restore_term(){
-termios.c_lflag |= ICANON;
-tcsetattr(0, TCSANOW, &termios);
+  termios.c_lflag |= ICANON;
+  tcsetattr(0, TCSANOW, &termios);
 }
 
 // init
@@ -591,6 +573,8 @@ int main(){
     if(quit_flg) break;
   }
   printf("\n");
+  term_cursor_location(0,0);
+  fprintf(stdout,"\033[2J");
 
   restore_term();
   cleanup();
