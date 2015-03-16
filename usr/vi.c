@@ -126,7 +126,7 @@ void terminal_cursor_update(){
     term_cursor_location(STATUSBAR_MESSAGE_START+statusbar.msglength, SCREEN_HEIGHT+1);
     fflush(stdout);
   }else{
-    term_cursor_location(cursor.x, cursor.y-screen.line+1);
+    term_cursor_location(cursor.x+1, cursor.y-screen.line+1);
     fflush(stdout);
   }
 }
@@ -327,15 +327,16 @@ void mode_change(int m){
 }
 
 void delete_normal(){
-  if(*(cursor.linebuffer->buf+cursor.x) == '\n') 
+  if(*(cursor.linebuffer->buf+cursor.x) == '\n' || cursor.x == cursor.linebuffer->size) 
     return;
-  memmove(cursor.linebuffer->buf+cursor.x-1, cursor.linebuffer->buf+cursor.x, cursor.linebuffer->size-cursor.x);
+  memmove(cursor.linebuffer->buf+cursor.x, cursor.linebuffer->buf+cursor.x+1, cursor.linebuffer->size-cursor.x);
 
   if(cursor.linebuffer->size > 0)
     cursor.linebuffer->size--;
 
   cursor.linebuffer->buf[cursor.linebuffer->size] = '\0';
-  cursor_left();
+  if(cursor.x >= cursor.linebuffer->size)
+    cursor_left();
 }
 void deleteline_normal(){
   struct linebuffer *p, *n;
