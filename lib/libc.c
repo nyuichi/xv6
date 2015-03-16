@@ -379,6 +379,7 @@ static int printi(FILE *fp, int x, int base, int w, int prec, int flag)
   return max(w, n);
 }
 
+/*
 static float normalize(float f, int *e)
 {
   static float table_p[] = { 1e1, 1e2, 1e4, 1e8, 1e16, 1e32 };
@@ -436,7 +437,7 @@ static int printef(FILE *fp, float f, int w, int prec, int flag)
   } else if (f == 0.0) {
     buf[len++] = '0';
     buf[len++] = '.';
-    /* prec >= 9 is treated as prec = 8 */
+    // prec >= 9 is treated as prec = 8
     for (i = 0; i < min(prec, 8); ++i)
       buf[len++] = '0';
   } else {
@@ -544,7 +545,7 @@ static int printff(FILE *fp, float f, int w, int prec, int flag)
     int expo;
     float g;
 
-    /* prec >= 10 is treated as prec = 9 */
+    // prec >= 10 is treated as prec = 9
     f += round_table[min(prec, 9)];
 
     g = normalize(f, &expo);
@@ -617,6 +618,7 @@ static int printgf(FILE *fp, float f, int w, int prec, int flag)
     return printef(fp, f, w, prec - 1, flag);
   }
 }
+*/
 
 static char *write_string_dst;
 static int write_string(int c)
@@ -723,24 +725,24 @@ int vfprintf(FILE *fp, const char *fmt, va_list ap)
         case 'p':
           ret += printi(fp, va_arg(ap, int), 16, w, prec, flag | HEXPRE);
           break;
-        case 'e':
-          ret += printef(fp, va_arg(ap, double), w, prec, flag | (alt & DOT));
-          break;
-        case 'E':
-          ret += printef(fp, va_arg(ap, double), w, prec, flag | (alt & DOT) | CAP);
-          break;
-        case 'f':
-          ret += printff(fp, va_arg(ap, double), w, prec, flag | (alt & DOT));
-          break;
-        case 'F':
-          ret += printff(fp, va_arg(ap, double), w, prec, flag | (alt & DOT) | CAP);
-          break;
-        case 'g':
-          ret += printgf(fp, va_arg(ap, double), w, prec, flag | (~alt & TRUNC));
-          break;
-        case 'G':
-          ret += printgf(fp, va_arg(ap, double), w, prec, flag | (~alt & TRUNC) | CAP);
-          break;
+        // case 'e':
+        //   ret += printef(fp, va_arg(ap, double), w, prec, flag | (alt & DOT));
+        //   break;
+        // case 'E':
+        //   ret += printef(fp, va_arg(ap, double), w, prec, flag | (alt & DOT) | CAP);
+        //   break;
+        // case 'f':
+        //   ret += printff(fp, va_arg(ap, double), w, prec, flag | (alt & DOT));
+        //   break;
+        // case 'F':
+        //   ret += printff(fp, va_arg(ap, double), w, prec, flag | (alt & DOT) | CAP);
+        //   break;
+        // case 'g':
+        //   ret += printgf(fp, va_arg(ap, double), w, prec, flag | (~alt & TRUNC));
+        //   break;
+        // case 'G':
+        //   ret += printgf(fp, va_arg(ap, double), w, prec, flag | (~alt & TRUNC) | CAP);
+        //   break;
         case 'n':
           *va_arg(ap, int*) = ret;
           break;
