@@ -188,6 +188,7 @@ void dump(){
 // display
 void display(struct linebuffer *head){
   int i, v;
+  int last2istail = 0;
   struct linebuffer *lbp;
 
   v = statusbar.visibility == STATUSBAR_VISIBLE;
@@ -199,9 +200,11 @@ void display(struct linebuffer *head){
   while(i-->0){
     fprintf(stdout, "%s", lbp->buf);
     lbp = lbp->next;
+    if(i == 2 && lbp == &linebuffer_tail)
+      last2istail = 1;
   }
 
-  if(lbp == &linebuffer_tail)
+  if(last2istail)
     fprintf(stdout, "\n");
 
   if(v)
