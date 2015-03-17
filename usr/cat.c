@@ -26,9 +26,6 @@ main(int argc, char *argv[])
 {
   int fd, i;
 
-  fprintf(stderr, "argc = %d argv[0] = %s\n", argc, argv[0]);
-  fprintf(stderr, "%s %d\n", argv[1], atoi(argv[1]));
-
   if(argc <= 1){
     cat(0);
     exit(1);
