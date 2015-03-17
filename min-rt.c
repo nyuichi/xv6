@@ -1642,7 +1642,7 @@ void trace_reflections(int index, double diffuse, double hilight_scale, vec_t *d
 /******************************************************************************
    直接光を追跡する
 *****************************************************************************/
-// iteration TODO
+
 void trace_ray(int nref, double energy, vec_t *dirvec, pixel_t *pixel, double dist) {
   if (nref <= 4) {
     int *surface_ids = p_surface_ids(pixel);
@@ -2251,7 +2251,6 @@ void setup_reflections(int obj_id) {
 /* レイトレの各ステップを行う関数を順次呼び出す */
 void rt (int size_x, int size_y) {
   pixel_t *prev, *cur, *next;
-  fprintf(stderr, "rt!\n");
   image_size[0] = size_x;
   image_size[1] = size_y;
   image_center[0] = size_x / 2;
@@ -2270,25 +2269,32 @@ void rt (int size_x, int size_y) {
   scan_lines(prev, cur, next, 2);
 }
 
-//0x00026fa4
 
-int main() {
+int main(int argc, char *argv[]) {
   int i;
   char *p;
-  __asm("break 1\n");
-  fprintf(stderr, "start! %d\n", 0);
+  int size = 8;
+
+  if (argc > 1)
+    size = atoi(argv[1]);
 
   for(i = 0; i < 50; ++i) {
     and_net[i] = malloc(sizeof(int));
     and_net[i][0] = -1;
   }
   p = malloc(64 * 1024);
-  if(p==0)
-    fprintf(stderr, "err\n");
+  if(p==0) {
+    fprintf(stderr, "malloc error\n");
+    exit(1);
+  }
   p += 64 * 1024;
+
+  __asm("mov r1, [rbp - 12]\n");
   __asm("mov rsp, [rbp - 8]\n");
   __asm("mov rbp, [rbp - 8]\n");
-  rt(8, 8);
+  __asm("push r1\n");
+  __asm("push r1\n");
+  __asm("call rt\n");
 
   exit(0);
 }

@@ -26,7 +26,7 @@ minrtread(struct inode *ip, char *dst, int n)
   static unsigned offset = 0;
   unsigned sz = *(int*)(_binary__min_rt_start);
   int i;
-  cprintf("min-rt sz = %d n = %d ofs = %d\n", sz, n, offset);
+
   for(i=0; i<n; ++i) {
     dst[i] = _binary__min_rt_start[offset];
     offset = (offset + 1) % ((unsigned)_binary__min_rt_size);
