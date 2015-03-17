@@ -9,7 +9,7 @@
 //  statusbar is append after SCREEN_HEIGHT screen
 //  actual screen height is SCREEN_HEIGHT+1
 #define SCREEN_WIDTH  30
-#define SCREEN_HEIGHT 10
+#define SCREEN_HEIGHT 20
 
 // line buffer length
 #define LINE_BUFFER_LENGTH 128
@@ -162,6 +162,7 @@ void cursor_right(){
 }
 
 // debug, dump
+
 /*
 void dump(){
   struct linebuffer *lbp;
@@ -174,7 +175,6 @@ void dump(){
     fprintf(stdout, "%s", lbp->buf);
     lbp = lbp->next;
   }
-  fprintf(stdout, "%s", lbp->buf);
   fprintf(stdout, ":::buffer:::\n");
   fprintf(stdout, "---cursor---\n");
   fprintf(stdout, "x:%d, y:%d, line:%s\n", cursor.x, cursor.y, cursor.linebuffer->buf);
@@ -188,7 +188,7 @@ void dump(){
 // display
 void display(struct linebuffer *head){
   int i, v;
-  int last2istail = 0;
+  int last1istail = 0, last2istail = 0;
   struct linebuffer *lbp;
 
   v = statusbar.visibility == STATUSBAR_VISIBLE;
@@ -202,10 +202,12 @@ void display(struct linebuffer *head){
     lbp = lbp->next;
     if(i == 2 && lbp == &linebuffer_tail)
       last2istail = 1;
+    if(i == 1 && lbp == &linebuffer_tail)
+      last1istail = 1;
   }
 
-  if(last2istail)
-    fprintf(stdout, "\n");
+  if(last1istail && last2istail)
+    fprintf(stdout, "~\n");
 
   if(v)
     fprintf(stdout, "%s  %s", statusbar.mode, statusbar.msg);
@@ -337,10 +339,10 @@ void delete_normal(){
     return;
   memmove(cursor.linebuffer->buf+cursor.x, cursor.linebuffer->buf+cursor.x+1, cursor.linebuffer->size-cursor.x);
 
+  cursor.linebuffer->buf[cursor.linebuffer->size] = '\0';
   if(cursor.linebuffer->size > 0)
     cursor.linebuffer->size--;
 
-  cursor.linebuffer->buf[cursor.linebuffer->size] = '\0';
   if(cursor.x >= cursor.linebuffer->size)
     cursor_left();
 }
@@ -350,15 +352,23 @@ void deleteline_normal(){
   p = cursor.linebuffer->prev;
   n = cursor.linebuffer->next;
 
+  if(p == &linebuffer_head && n == &linebuffer_tail){
+    memset(cursor.linebuffer->buf, '\0', sizeof(cursor.linebuffer->buf));
+    cursor.linebuffer->size = 0;
+    return;
+  }
+
   link_linebuffer(p,n);
 
   free(cursor.linebuffer->buf);
   free(cursor.linebuffer);
 
-  if(n != &linebuffer_tail)
+  if(n != &linebuffer_tail){
     cursor.linebuffer = n;
-  else
+  }else{
+    cursor_up();
     cursor.linebuffer = p;
+  }
 }
 
 void save(){
@@ -385,12 +395,13 @@ void load(){
   if(ifile == 0) return;
 
   lbp  = &linebuffer_head;
-  while(fgets(buf, LINE_BUFFER_LENGTH, ifile) != 0){
+  while(fgets(buf, sizeof(buf), ifile) != 0){
     lbpnext = create_linebuffer();
     strcpy(lbpnext->buf, buf);
     lbpnext->size = strlen(buf)-1;
     link_linebuffer(lbp, lbpnext);
     lbp  = lbpnext;
+    memset(buf, '\0', sizeof(buf));
   }
   link_linebuffer(lbp, &linebuffer_tail);
   
@@ -554,7 +565,7 @@ void init(){
   link_linebuffer(&linebuffer_tail, &linebuffer_tail);
   link_linebuffer(&linebuffer_head, lbp);
   link_linebuffer(lbp, &linebuffer_tail);
-  strcpy(linebuffer_tail.buf,"\n~");
+  strcpy(linebuffer_tail.buf,"~\n");
 
   // screen_init: after buffer initialization
   screen_init();
@@ -574,11 +585,16 @@ void cleanup(){
 }
 
 // main
-int main(){
+int main(int argc, char *argv[]){
   struct linebuffer *top;
 
   init();
   init_term();
+
+  if(argc == 2){
+    strcpy(inputfilename, argv[1]);
+    load();
+  }
 
   while(1){
     top = screen_top();
