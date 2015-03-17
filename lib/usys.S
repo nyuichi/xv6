@@ -30,6 +30,7 @@ SYSCALL(sleep)
 SYSCALL(uptime)
 SYSCALL(halt)
 SYSCALL(ioctl)
+SYSCALL(procdump)
 
 .global _exit
 _exit:

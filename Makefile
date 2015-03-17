@@ -130,6 +130,7 @@ UPROGS=\
 	_pwd\
 	_vi\
 	_as\
+	_ps\
 # remove this to save file system size.
 #_forktest\
 #_stressfs\

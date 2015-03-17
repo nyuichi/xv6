@@ -22,3 +22,4 @@
 #define SYS_close  21
 #define SYS_halt   22
 #define SYS_ioctl  23
+#define SYS_procdump 24

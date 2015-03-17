@@ -100,6 +100,7 @@ extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_halt(void);
 extern int sys_ioctl(void);
+extern int sys_procdump(void);
 
 int callsys (int num) {
   switch(num){
@@ -126,6 +127,7 @@ int callsys (int num) {
   case SYS_close  : return sys_close();
   case SYS_halt   : return sys_halt();
   case SYS_ioctl  : return sys_ioctl();
+  case SYS_procdump : return sys_procdump();
   default         : return -1;
   }
 }
