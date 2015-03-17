@@ -37,11 +37,9 @@ exec(char *path, char **argv)
     goto bad;
   if(loaduvm(pgdir, (char*)0, ip, HEADER_SIZE, program_size) < 0)
     goto bad;
-
   iunlockput(ip);
   end_op();
   ip = 0;
-
   // Allocate two pages at the next page boundary.
   // Make the first inaccessible.  Use the second as the user stack.
   sz = PGROUNDUP(sz);
@@ -49,7 +47,6 @@ exec(char *path, char **argv)
     goto bad;
   clearpteu(pgdir, (char*)(sz - 2*PGSIZE));
   sp = sz;
-
   // Push argument strings, prepare rest of stack in ustack.
   for(argc = 0; argv[argc]; argc++) {
     if(argc >= MAXARG)
@@ -73,7 +70,6 @@ exec(char *path, char **argv)
     if(*s == '/')
       last = s+1;
   safestrcpy(proc->name, last, sizeof(proc->name));
-
   // Commit to the user image.
   oldpgdir = proc->pgdir;
   proc->pgdir = pgdir;

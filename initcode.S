@@ -33,4 +33,3 @@ exit:
   mov r1, SYS_exit
   sysenter
   br exit
-

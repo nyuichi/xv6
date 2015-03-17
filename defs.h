@@ -23,6 +23,9 @@ void            cprintf();
 void            consoleintr(int(*)(void));
 void            panic(char*);
 
+// device.c
+void            deviceinit(void);
+
 // exec.c
 int             exec(char*, char**);
 

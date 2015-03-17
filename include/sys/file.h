@@ -38,4 +38,4 @@ struct devsw {
 extern struct devsw devsw[];
 
 #define CONSOLE 1
-
+#define MINRT   2
