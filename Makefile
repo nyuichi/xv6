@@ -3,6 +3,7 @@ ASMS = \
 	_entry.s\
 	_bio.s\
 	_console.s\
+	_devicefile.s\
 	_exec.s\
 	_file.s\
 	_fs.s\
@@ -61,12 +62,12 @@ initcode: initcode.S
 # needing a scratch disk.
 # We use memfs as default because our CPU architecture has no disk.
 MEMFSASMS = $(filter-out _ide.s,$(ASMS)) _memide.s
-kernelmemfs: $(MEMFSASMS) initcode fs.img
-	./tools/gen_binary_blobs 0x80002000 initcode fs.img
+kernelmemfs: $(MEMFSASMS) initcode _min-rt fs.img
+	./tools/gen_binary_blobs 0x80002000 initcode _min-rt fs.img
 	$(AS) $(ASFLAGS) -c -o _kernelmemfs -e 0x80002000 -start _start $(MEMFSASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
-	./tools/gen_binary_blobs `ruby -e "print open('_kernelmemfs').size + 0x80002000"` initcode fs.img
+	./tools/gen_binary_blobs `ruby -e "print open('_kernelmemfs').size + 0x80002000"` initcode _min-rt fs.img
 	$(AS) $(ASFLAGS) -c -o _kernelmemfs -e 0x80002000 -start _start $(MEMFSASMS) _binary_blobs.s $(UCCLIBS) -f __UCC_HEAP_START
-	cat _kernelmemfs initcode fs.img > kernelmemfs
+	cat _kernelmemfs initcode _min-rt fs.img > kernelmemfs
 	rm _kernelmemfs
 	./tools/attach_boot_header kernelmemfs
 
@@ -74,6 +75,7 @@ tags: $(ASMS) _init
 	etags *.S *.c
 
 LIBC = lib/_libc.s lib/_usys.s
+LIBM = lib/_libm.s
 
 _%.s: %.S
 	$(NATIVECC) $(NATIVECFLAGS) -E -I. -o $@ $<
@@ -93,6 +95,10 @@ _sl: lib/_curses.s usr/_sl.s
 ASASMS=usr/as/_as.s usr/as/_ops.s usr/as/_parse.s usr/as/_vector.s
 _as: $(ASASMS)
 	$(AS) $(ASFLAGS) -e 0 -o _as $(ASASMS) $(LIBC) $(UCCLIBS) -f __UCC_HEAP_START
+
+_min-rt: min-rt.c $(LIBC) $(LIBM)
+	$(CC) $(CFLAGS) -s -o _min-rt.s min-rt.c
+	$(AS) $(ASFLAGS) -e 0 -o _min-rt _min-rt.s $(LIBM) $(LIBC) $(UCCLIBS) -f __UCC_HEAP_START
 
 
 mkfs: tools/mkfs.c
@@ -131,7 +137,7 @@ UPROGS=\
 #_usertests\
 
 fs.img: mkfs README $(UPROGS)
-	./mkfs fs.img README hello.s $(UPROGS)
+	./mkfs fs.img README hello.s contest.bin $(UPROGS)
 
 -include *.d
 

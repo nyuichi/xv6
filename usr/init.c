@@ -16,11 +16,12 @@ main(void)
     mknod("console", 1, 1);
     open("console", O_RDWR);
   }
+  mknod("min-rt", 2, 1);
   dup(0);  // stdout
   dup(0);  // stderr
-
   for(;;){
     printf("init: starting sh\n");
+
     pid = fork();
     if(pid < 0){
       fprintf(stderr, "init: fork failed\n");

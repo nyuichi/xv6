@@ -23,6 +23,7 @@ main(void)
   cprintf("\ncpu%d: starting xv6\n\n", cpu->id);
 
   consoleinit();   // I/O devices & their interrupts
+  deviceinit();
   uartinit();      // serial port
 
   pinit();         // process table
@@ -35,7 +36,6 @@ main(void)
     timerinit();   // uniprocessor timer
 
   kinit2(P2V(1024*1024), P2V(PHYSTOP)); // must come after startothers()
-
   userinit();      // first user process
   // Finish setting up this processor in mpmain.
   mpmain();

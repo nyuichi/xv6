@@ -565,6 +565,7 @@ static int printff(FILE *fp, float f, int w, int prec, int flag)
   char buf[49], pbuf[1];
   int i, n, len = 0, plen = 0, sp = 0;
   union { float f; unsigned i; } u;
+  __asm("break 2\n");
 
   u.f = f;
 
@@ -577,6 +578,7 @@ static int printff(FILE *fp, float f, int w, int prec, int flag)
   } else if (flag & (PLUS | SPACE)) {
     pbuf[plen++] = flag & PLUS ? '+' : ' ';
   }
+  __asm("break 3\n");
 
   if ((u.i >> 23 & 255) == 255) {
     int ofs = flag & CAP ? 'A' - 'a' : 0;
@@ -987,6 +989,7 @@ void *malloc(size_t nbytes)
     base.next = freep = prevp = &base;
     base.size = 0;
   }
+
   for (p = prevp->next; ; prevp = p, p = p->next) {
     if (p->size >= nunits) {  /* big enough */
       if (p->size == nunits) {  /* exactly */
@@ -1003,6 +1006,7 @@ void *malloc(size_t nbytes)
       if (! (p = morecore(nunits)))
         return NULL;
   }
+
 }
 
 static size_t malloc_size(void *ap)
